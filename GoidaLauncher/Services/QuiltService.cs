@@ -23,13 +23,70 @@ public sealed class QuiltService
         _http.DefaultRequestHeaders.UserAgent.ParseAdd("GoidaLauncher/1.0");
     }
 
+    private List<string>? _allLoadersCache;
+
     public async Task<string?> GetRecommendedLoaderVersionAsync(string mcVersion, CancellationToken ct = default)
     {
-        var url = $"{MetaBaseUrl}/{Uri.EscapeDataString(mcVersion)}";
-        var json = await _http.GetStringAsync(url, ct);
-        var entries = JsonSerializer.Deserialize<List<QuiltLoaderListEntry>>(json) ?? new();
+        try
+        {
+            // 1. Получаем список загрузчиков, поддерживающих данную версию MC
+            var mcUrl = $"{MetaBaseUrl}/{Uri.EscapeDataString(mcVersion)}";
+            using var mcResp = await _http.GetAsync(mcUrl, ct);
+            if (!mcResp.IsSuccessStatusCode)
+                return null;
 
-        return entries.Count > 0 ? entries[0].Loader.Version : null;
+            var mcJson = await mcResp.Content.ReadAsStringAsync(ct);
+            var mcEntries = JsonSerializer.Deserialize<List<QuiltLoaderListEntry>>(mcJson);
+            if (mcEntries == null || mcEntries.Count == 0)
+                return null;
+
+            var compatibleVersions = new HashSet<string>(
+                mcEntries.Select(e => e.Loader.Version).Where(v => !string.IsNullOrEmpty(v)),
+                StringComparer.OrdinalIgnoreCase);
+
+            if (compatibleVersions.Count == 0)
+                return null;
+
+            // 2. Получаем хронологический список всех загрузчиков Quilt (отсортирован от новых к старым)
+            if (_allLoadersCache == null)
+            {
+                var allUrl = MetaBaseUrl;
+                var allJson = await _http.GetStringAsync(allUrl, ct);
+                using var doc = JsonDocument.Parse(allJson);
+                var list = new List<string>();
+                foreach (var element in doc.RootElement.EnumerateArray())
+                {
+                    if (element.TryGetProperty("version", out var vProp))
+                    {
+                        var v = vProp.GetString();
+                        if (!string.IsNullOrEmpty(v)) list.Add(v);
+                    }
+                }
+                _allLoadersCache = list;
+            }
+
+            string? firstMatch = null;
+            string? firstStableMatch = null;
+
+            foreach (var ver in _allLoadersCache)
+            {
+                if (!compatibleVersions.Contains(ver)) continue;
+
+                firstMatch ??= ver;
+                if (!ver.Contains("beta", StringComparison.OrdinalIgnoreCase) &&
+                    !ver.Contains("alpha", StringComparison.OrdinalIgnoreCase))
+                {
+                    firstStableMatch ??= ver;
+                    break;
+                }
+            }
+
+            return firstStableMatch ?? firstMatch ?? mcEntries[0].Loader.Version;
+        }
+        catch
+        {
+            return null;
+        }
     }
 
     public async Task<VersionDetails> GetMergedVersionDetailsAsync(
@@ -59,7 +116,9 @@ public sealed class QuiltService
         {
             merged.Arguments = new ArgumentsSpec
             {
-                Game = vanilla.Arguments?.Game ?? new List<JsonElement>(),
+                Game = (vanilla.Arguments?.Game ?? new List<JsonElement>())
+                    .Concat(profile.Arguments?.Game ?? new List<JsonElement>())
+                    .ToList(),
                 Jvm = (vanilla.Arguments?.Jvm ?? new List<JsonElement>())
                     .Concat(profile.Arguments?.Jvm ?? new List<JsonElement>())
                     .ToList(),

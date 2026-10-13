@@ -31,6 +31,15 @@ public partial class HomePage : UserControl
         InitAccounts();
         RefreshBuildCombo();
 
+        BuildCombo.SelectionChanged += (_, _) =>
+        {
+            if (BuildCombo.SelectedItem is InstalledBuild b)
+            {
+                UpdateLoaderIcon(b.Loader);
+            }
+            UpdateLaunchButtonText();
+        };
+
         Loaded += (_, _) =>
         {
             RefreshActiveSkin3D();
@@ -177,6 +186,7 @@ public partial class HomePage : UserControl
         BuildCombo.SelectedItem = toSelect;
 
         UpdateLoaderIcon(toSelect?.Loader);
+        UpdateLaunchButtonText();
     }
 
     private void UpdateLoaderIcon(string? loader)
@@ -351,6 +361,28 @@ public partial class HomePage : UserControl
                     Log($"Forge {forgeVersion} установлен.");
                 }
             }
+            else if (loader == "NeoForge")
+            {
+                Log("Получаю данные NeoForge...");
+                var neoService = new NeoForgeService(_settings.GameDirectory, _minecraft.LibrariesDirectory);
+                var neoVersion = await neoService.GetRecommendedNeoForgeVersionAsync(selected.McVersion);
+
+                if (neoVersion is null)
+                {
+                    Log($"NeoForge не поддерживает версию {selected.McVersion} (NeoForge доступен для Minecraft 1.20.2+). Запускаю ванильную версию.");
+                    loader = "Vanilla";
+                }
+                else
+                {
+                    Log($"Устанавливаю NeoForge {neoVersion}...");
+                    await _minecraft.EnsureClientJarDownloadedAsync(details);
+                    var clientJarPath = _minecraft.GetClientJarPath(details);
+
+                    var neoLog = new Progress<string>(Log);
+                    details = await neoService.InstallAndMergeAsync(details, selected.McVersion, neoVersion, clientJarPath, neoLog);
+                    Log($"NeoForge {neoVersion} установлен.");
+                }
+            }
 
             var progress = new Progress<ProgressInfo>(p =>
             {
@@ -442,12 +474,34 @@ public partial class HomePage : UserControl
         }
         else
         {
-            LaunchButton.Content = "ИГРАТЬ";
-            LaunchButton.Style = (Style)Application.Current.FindResource("PrimaryPlayButton");
-            LaunchButton.IsEnabled = true;
             BuildCombo.IsEnabled = true;
-            StatusText.Text = "Готов к запуску";
+            LaunchButton.IsEnabled = true;
             DownloadProgress.Value = 0;
+            UpdateLaunchButtonText();
+        }
+    }
+
+    private void UpdateLaunchButtonText()
+    {
+        if (_runningGameProcess is not null && !_runningGameProcess.HasExited)
+        {
+            LaunchButton.Content = "ЗАКРЫТЬ";
+            LaunchButton.Style = (Style)Application.Current.FindResource("StopGameButton");
+            return;
+        }
+
+        LaunchButton.Style = (Style)Application.Current.FindResource("PrimaryPlayButton");
+
+        if (BuildCombo.SelectedItem is InstalledBuild build)
+        {
+            bool isDownloaded = _minecraft.IsVersionDownloadedForLoader(build.McVersion, build.Loader);
+            LaunchButton.Content = isDownloaded ? "ИГРАТЬ" : "СКАЧАТЬ И ИГРАТЬ";
+            StatusText.Text = isDownloaded ? "Готов к запуску" : "Требуется скачивание";
+        }
+        else
+        {
+            LaunchButton.Content = "ИГРАТЬ";
+            StatusText.Text = "Выберите версию";
         }
     }
 

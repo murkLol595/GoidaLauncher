@@ -38,15 +38,22 @@ public sealed class ForgeService
 
     public async Task<string?> GetRecommendedForgeVersionAsync(string mcVersion, CancellationToken ct = default)
     {
-        var json = await _http.GetStringAsync(PromotionsUrl, ct);
-        var promos = JsonSerializer.Deserialize<ForgePromotions>(json)?.Promos ?? new();
+        try
+        {
+            var json = await _http.GetStringAsync(PromotionsUrl, ct);
+            var promos = JsonSerializer.Deserialize<ForgePromotions>(json)?.Promos ?? new();
 
-        if (promos.TryGetValue($"{mcVersion}-recommended", out var recommended))
-            return recommended;
-        if (promos.TryGetValue($"{mcVersion}-latest", out var latest))
-            return latest;
+            if (promos.TryGetValue($"{mcVersion}-recommended", out var recommended))
+                return recommended;
+            if (promos.TryGetValue($"{mcVersion}-latest", out var latest))
+                return latest;
 
-        return null;
+            return null;
+        }
+        catch
+        {
+            return null;
+        }
     }
 
     public async Task<VersionDetails> InstallAndMergeAsync(
@@ -55,14 +62,18 @@ public sealed class ForgeService
         string forgeVersion,
         string vanillaClientJarPath,
         IProgress<string> log,
-        CancellationToken ct = default)
+        CancellationToken ct = default,
+        string? customInstallerUrl = null,
+        string? customLoaderName = null)
     {
-        var workDir = Path.Combine(_tempRootDir, $"{mcVersion}-{forgeVersion}");
+        var loaderName = customLoaderName ?? "Forge";
+        var workDir = Path.Combine(_tempRootDir, $"{loaderName.ToLowerInvariant()}-{mcVersion}-{forgeVersion}");
         Directory.CreateDirectory(workDir);
 
-        log.Report($"Скачиваю установщик Forge {forgeVersion}...");
+        log.Report($"Скачиваю установщик {loaderName} {forgeVersion}...");
         var installerPath = Path.Combine(workDir, "installer.jar");
-        var installerUrl = $"{ForgeMavenBase}net/minecraftforge/forge/{mcVersion}-{forgeVersion}/forge-{mcVersion}-{forgeVersion}-installer.jar";
+        var installerUrl = customInstallerUrl
+            ?? $"{ForgeMavenBase}net/minecraftforge/forge/{mcVersion}-{forgeVersion}/forge-{mcVersion}-{forgeVersion}-installer.jar";
         await DownloadFileAsync(installerUrl, installerPath, ct);
 
         using var installerZip = ZipFile.OpenRead(installerPath);
@@ -171,7 +182,7 @@ public sealed class ForgeService
 
         var merged = new VersionDetails
         {
-            Id = string.IsNullOrWhiteSpace(forgeVersionDetails.Id) ? $"forge-{mcVersion}-{forgeVersion}" : forgeVersionDetails.Id,
+            Id = string.IsNullOrWhiteSpace(forgeVersionDetails.Id) ? $"{loaderName.ToLowerInvariant()}-{mcVersion}-{forgeVersion}" : forgeVersionDetails.Id,
             MainClass = forgeVersionDetails.MainClass,
             Type = vanilla.Type,
             AssetsIndexId = vanilla.AssetsIndexId,

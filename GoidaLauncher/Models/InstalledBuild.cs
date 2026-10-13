@@ -8,6 +8,7 @@ public sealed record InstalledBuild(string FolderId, string McVersion, string Lo
         "Fabric" => "Fabric",
         "Quilt" => "Quilt",
         "Forge" => "Forge",
+        "NeoForge" => "NeoForge",
         _ => "Vanilla",
     };
 

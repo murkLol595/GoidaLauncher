@@ -28,15 +28,22 @@ public sealed class FabricService
     /// <summary>Возвращает рекомендуемую (последнюю стабильную) версию Fabric Loader для данной версии Minecraft.</summary>
     public async Task<string?> GetRecommendedLoaderVersionAsync(string mcVersion, CancellationToken ct = default)
     {
-        var url = $"{MetaBaseUrl}/{Uri.EscapeDataString(mcVersion)}";
-        var json = await _http.GetStringAsync(url, ct);
-        var entries = JsonSerializer.Deserialize<List<FabricLoaderListEntry>>(json) ?? new();
+        try
+        {
+            var url = $"{MetaBaseUrl}/{Uri.EscapeDataString(mcVersion)}";
+            var json = await _http.GetStringAsync(url, ct);
+            var entries = JsonSerializer.Deserialize<List<FabricLoaderListEntry>>(json) ?? new();
 
-        if (entries.Count == 0)
+            if (entries.Count == 0)
+                return null;
+
+            var stable = entries.FirstOrDefault(e => e.Loader.Stable);
+            return (stable ?? entries[0]).Loader.Version;
+        }
+        catch
+        {
             return null;
-
-        var stable = entries.FirstOrDefault(e => e.Loader.Stable);
-        return (stable ?? entries[0]).Loader.Version;
+        }
     }
 
     /// <summary>

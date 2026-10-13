@@ -195,6 +195,7 @@ public sealed class MinecraftService
             "Fabric" => "fabric-loader-",
             "Quilt" => "quilt-loader-",
             "Forge" => "forge-",
+            "NeoForge" => "neoforge-",
             _ => "",
         };
         if (marker == "") return false;
@@ -440,7 +441,18 @@ public sealed class MinecraftService
                 if (!File.Exists(targetPath) || new FileInfo(targetPath).Length != obj.Size)
                 {
                     var url = $"{ResourcesBaseUrl}/{prefix}/{obj.Hash}";
-                    await DownloadFileAsync(url, targetPath, ct);
+                    for (int attempt = 0; attempt < 3; attempt++)
+                    {
+                        try
+                        {
+                            await DownloadFileAsync(url, targetPath, ct);
+                            break;
+                        }
+                        catch when (attempt < 2)
+                        {
+                            await Task.Delay(150 * (attempt + 1), ct);
+                        }
+                    }
                 }
             }
             finally
@@ -459,6 +471,11 @@ public sealed class MinecraftService
     private async Task DownloadFileAsync(string url, string targetPath, CancellationToken ct)
     {
         var tmpPath = targetPath + ".tmp";
+        if (File.Exists(tmpPath))
+        {
+            try { File.Delete(tmpPath); } catch { }
+        }
+
         using (var response = await _http.GetAsync(url, HttpCompletionOption.ResponseHeadersRead, ct))
         {
             response.EnsureSuccessStatusCode();
@@ -466,20 +483,36 @@ public sealed class MinecraftService
             await response.Content.CopyToAsync(fs, ct);
         }
 
-        if (File.Exists(targetPath))
-            File.Delete(targetPath);
-        File.Move(tmpPath, targetPath);
+        try
+        {
+            if (File.Exists(targetPath))
+                File.Delete(targetPath);
+            File.Move(tmpPath, targetPath);
+        }
+        catch
+        {
+            File.Copy(tmpPath, targetPath, overwrite: true);
+            try { File.Delete(tmpPath); } catch { }
+        }
     }
 
     public static string MavenNameToPath(string mavenName)
     {
-        // group:artifact:version[:classifier] -> group/artifact/version/artifact-version[-classifier].jar
+        // group:artifact:version[:classifier][@extension] -> group/artifact/version/artifact-version[-classifier].extension
+        string ext = "jar";
+        var atIdx = mavenName.LastIndexOf('@');
+        if (atIdx >= 0)
+        {
+            ext = mavenName[(atIdx + 1)..];
+            mavenName = mavenName[..atIdx];
+        }
+
         var parts = mavenName.Split(':');
         var group = parts[0].Replace('.', '/');
         var artifact = parts[1];
         var version = parts[2];
         var classifier = parts.Length > 3 ? "-" + parts[3] : "";
-        return $"{group}/{artifact}/{version}/{artifact}-{version}{classifier}.jar";
+        return $"{group}/{artifact}/{version}/{artifact}-{version}{classifier}.{ext}";
     }
 
     // ---------------------------------------------------------------
@@ -660,8 +693,10 @@ public sealed class MinecraftService
         var javaHome = Environment.GetEnvironmentVariable("JAVA_HOME");
         if (!string.IsNullOrWhiteSpace(javaHome))
         {
-            var candidate = Path.Combine(javaHome, "bin", "javaw.exe");
-            if (File.Exists(candidate)) return candidate;
+            var candidateJava = Path.Combine(javaHome, "bin", "java.exe");
+            if (File.Exists(candidateJava)) return candidateJava;
+            var candidateJavaw = Path.Combine(javaHome, "bin", "javaw.exe");
+            if (File.Exists(candidateJavaw)) return candidateJavaw;
         }
 
         // Пытаемся найти java в PATH
@@ -670,13 +705,15 @@ public sealed class MinecraftService
         {
             try
             {
-                var candidate = Path.Combine(dir, "javaw.exe");
-                if (File.Exists(candidate)) return candidate;
+                var candidateJava = Path.Combine(dir, "java.exe");
+                if (File.Exists(candidateJava)) return candidateJava;
+                var candidateJavaw = Path.Combine(dir, "javaw.exe");
+                if (File.Exists(candidateJavaw)) return candidateJavaw;
             }
             catch { /* игнорируем некорректные записи PATH */ }
         }
 
         // Резервный вариант — рассчитываем на то, что java есть в PATH
-        return "javaw.exe";
+        return "java.exe";
     }
 }

@@ -22,7 +22,7 @@ public partial class InstallVersionPage : UserControl
     private readonly MinecraftService _minecraft;
     private VersionManifest? _manifest;
     private string _selectedLoader = "Fabric";
-    private string _selectedVersion = "1.21.11";
+    private string _selectedVersion = "";
     private Border? _activeLoaderCard;
     private Button? _activeVersionButton;
 
@@ -95,7 +95,7 @@ public partial class InstallVersionPage : UserControl
             {
                 _selectedLoader = id;
                 HighlightActiveLoader(card);
-                UpdateSummary();
+                RefreshVersionList();
             };
 
             if (id == _selectedLoader)
@@ -143,7 +143,8 @@ public partial class InstallVersionPage : UserControl
             _manifest = await _minecraft.GetVersionManifestAsync();
             if (_manifest.Versions.Count > 0 && string.IsNullOrWhiteSpace(_selectedVersion))
             {
-                _selectedVersion = _manifest.Latest.Release;
+                var latestRel = _manifest.Versions.FirstOrDefault(v => v.Type == "release")?.Id;
+                _selectedVersion = latestRel ?? _manifest.Latest.Release;
             }
 
             RefreshVersionList();

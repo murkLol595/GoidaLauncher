@@ -84,7 +84,7 @@
                 </Grid.ColumnDefinitions>
 
                 <StackPanel Grid.Column="0" VerticalAlignment="Center">
-                    <TextBlock x:Name="SelectedSummaryText" Text="Выбрано: 1.21.11 (Fabric)"
+                    <TextBlock x:Name="SelectedSummaryText" Text="Загрузка списка версий..."
                                FontSize="14" FontWeight="Bold" Foreground="{StaticResource TextPrimary}"/>
                     <TextBlock x:Name="StatusText" Text="Готов к установке"
                                FontSize="11" Foreground="{DynamicResource AccentGreen}" Margin="0,2,0,0"/>
