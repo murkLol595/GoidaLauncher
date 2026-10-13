@@ -1,0 +1,6 @@
+bin/
+obj/
+.vs/
+*.user
+InstallerOutput/
+push_to_github.bat

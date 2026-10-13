@@ -1,0 +1,338 @@
+<Window x:Class="GoidaLauncher.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="GOIDA LAUNCHER"
+        Icon="Assets/icon.ico"
+        Height="730" Width="1080"
+        MinHeight="640" MinWidth="940"
+        Background="#080B14"
+        WindowStartupLocation="CenterScreen"
+        FontFamily="Segoe UI">
+
+    <Grid>
+        <!-- Живой фон в стиле лава-лампы: размытые неоновые сферы плавают на фоне -->
+        <Canvas x:Name="BackgroundCanvas" ClipToBounds="True" IsHitTestVisible="False" Background="{DynamicResource BgDark}">
+            <!-- Пятно 1: синий/индиго с мягким градиентом вместо тяжелого блюра -->
+            <Ellipse Width="650" Height="650" Canvas.Left="-100" Canvas.Top="-60" Opacity="0.8">
+                <Ellipse.Fill>
+                    <RadialGradientBrush>
+                        <GradientStop x:Name="Blob1Stop" Color="#552A4AEB" Offset="0"/>
+                        <GradientStop Color="#252A4AEB" Offset="0.45"/>
+                        <GradientStop Color="#082A4AEB" Offset="0.75"/>
+                        <GradientStop Color="#002A4AEB" Offset="1"/>
+                    </RadialGradientBrush>
+                </Ellipse.Fill>
+                <Ellipse.RenderTransform>
+                    <TranslateTransform x:Name="Blob1Move"/>
+                </Ellipse.RenderTransform>
+                <Ellipse.Triggers>
+                    <EventTrigger RoutedEvent="Loaded">
+                        <BeginStoryboard>
+                            <Storyboard Timeline.DesiredFrameRate="60">
+                                <DoubleAnimationUsingKeyFrames Storyboard.TargetName="Blob1Move" Storyboard.TargetProperty="X"
+                                                                Duration="0:0:30" RepeatBehavior="Forever">
+                                    <EasingDoubleKeyFrame KeyTime="0:0:0" Value="0"><EasingDoubleKeyFrame.EasingFunction><SineEase/></EasingDoubleKeyFrame.EasingFunction></EasingDoubleKeyFrame>
+                                    <EasingDoubleKeyFrame KeyTime="0:0:15" Value="140"><EasingDoubleKeyFrame.EasingFunction><SineEase/></EasingDoubleKeyFrame.EasingFunction></EasingDoubleKeyFrame>
+                                    <EasingDoubleKeyFrame KeyTime="0:0:30" Value="0"><EasingDoubleKeyFrame.EasingFunction><SineEase/></EasingDoubleKeyFrame.EasingFunction></EasingDoubleKeyFrame>
+                                </DoubleAnimationUsingKeyFrames>
+                                <DoubleAnimationUsingKeyFrames Storyboard.TargetName="Blob1Move" Storyboard.TargetProperty="Y"
+                                                                Duration="0:0:24" RepeatBehavior="Forever">
+                                    <EasingDoubleKeyFrame KeyTime="0:0:0" Value="0"><EasingDoubleKeyFrame.EasingFunction><SineEase/></EasingDoubleKeyFrame.EasingFunction></EasingDoubleKeyFrame>
+                                    <EasingDoubleKeyFrame KeyTime="0:0:12" Value="100"><EasingDoubleKeyFrame.EasingFunction><SineEase/></EasingDoubleKeyFrame.EasingFunction></EasingDoubleKeyFrame>
+                                    <EasingDoubleKeyFrame KeyTime="0:0:24" Value="0"><EasingDoubleKeyFrame.EasingFunction><SineEase/></EasingDoubleKeyFrame.EasingFunction></EasingDoubleKeyFrame>
+                                </DoubleAnimationUsingKeyFrames>
+                            </Storyboard>
+                        </BeginStoryboard>
+                    </EventTrigger>
+                </Ellipse.Triggers>
+            </Ellipse>
+
+            <!-- Пятно 2: фиолетовый/неон -->
+            <Ellipse Width="560" Height="560" Canvas.Left="580" Canvas.Top="220" Opacity="0.75">
+                <Ellipse.Fill>
+                    <RadialGradientBrush>
+                        <GradientStop x:Name="Blob2Stop" Color="#557C3ADC" Offset="0"/>
+                        <GradientStop Color="#257C3ADC" Offset="0.45"/>
+                        <GradientStop Color="#087C3ADC" Offset="0.75"/>
+                        <GradientStop Color="#007C3ADC" Offset="1"/>
+                    </RadialGradientBrush>
+                </Ellipse.Fill>
+                <Ellipse.RenderTransform>
+                    <TranslateTransform x:Name="Blob2Move"/>
+                </Ellipse.RenderTransform>
+                <Ellipse.Triggers>
+                    <EventTrigger RoutedEvent="Loaded">
+                        <BeginStoryboard>
+                            <Storyboard Timeline.DesiredFrameRate="60">
+                                <DoubleAnimationUsingKeyFrames Storyboard.TargetName="Blob2Move" Storyboard.TargetProperty="X"
+                                                                Duration="0:0:34" RepeatBehavior="Forever">
+                                    <EasingDoubleKeyFrame KeyTime="0:0:0" Value="0"><EasingDoubleKeyFrame.EasingFunction><SineEase/></EasingDoubleKeyFrame.EasingFunction></EasingDoubleKeyFrame>
+                                    <EasingDoubleKeyFrame KeyTime="0:0:17" Value="-150"><EasingDoubleKeyFrame.EasingFunction><SineEase/></EasingDoubleKeyFrame.EasingFunction></EasingDoubleKeyFrame>
+                                    <EasingDoubleKeyFrame KeyTime="0:0:34" Value="0"><EasingDoubleKeyFrame.EasingFunction><SineEase/></EasingDoubleKeyFrame.EasingFunction></EasingDoubleKeyFrame>
+                                </DoubleAnimationUsingKeyFrames>
+                                <DoubleAnimationUsingKeyFrames Storyboard.TargetName="Blob2Move" Storyboard.TargetProperty="Y"
+                                                                Duration="0:0:26" RepeatBehavior="Forever">
+                                    <EasingDoubleKeyFrame KeyTime="0:0:0" Value="0"><EasingDoubleKeyFrame.EasingFunction><SineEase/></EasingDoubleKeyFrame.EasingFunction></EasingDoubleKeyFrame>
+                                    <EasingDoubleKeyFrame KeyTime="0:0:13" Value="-120"><EasingDoubleKeyFrame.EasingFunction><SineEase/></EasingDoubleKeyFrame.EasingFunction></EasingDoubleKeyFrame>
+                                    <EasingDoubleKeyFrame KeyTime="0:0:26" Value="0"><EasingDoubleKeyFrame.EasingFunction><SineEase/></EasingDoubleKeyFrame.EasingFunction></EasingDoubleKeyFrame>
+                                </DoubleAnimationUsingKeyFrames>
+                            </Storyboard>
+                        </BeginStoryboard>
+                    </EventTrigger>
+                </Ellipse.Triggers>
+            </Ellipse>
+
+            <!-- Пятно 3: глубокая тень (статичная) -->
+            <Ellipse Width="700" Height="700" Canvas.Left="200" Canvas.Top="-150" Opacity="0.85">
+                <Ellipse.Fill>
+                    <RadialGradientBrush>
+                        <GradientStop x:Name="Blob3Stop" Color="#B0080A18" Offset="0"/>
+                        <GradientStop Color="#60080A18" Offset="0.5"/>
+                        <GradientStop Color="#00080A18" Offset="1"/>
+                    </RadialGradientBrush>
+                </Ellipse.Fill>
+            </Ellipse>
+
+            <!-- Пятно 4: акцентный цвет (статичный мягкий ореол) -->
+            <Ellipse Width="450" Height="450" Canvas.Left="350" Canvas.Top="380" Opacity="0.5">
+                <Ellipse.Fill>
+                    <RadialGradientBrush>
+                        <GradientStop Color="{DynamicResource AccentColorRaw}" Offset="0"/>
+                        <GradientStop Color="#20000000" Offset="0.5"/>
+                        <GradientStop Color="Transparent" Offset="1"/>
+                    </RadialGradientBrush>
+                </Ellipse.Fill>
+            </Ellipse>
+
+            <!-- Пятно 5: бирюза/сапфир (статичный мягкий ореол) -->
+            <Ellipse Width="380" Height="380" Canvas.Left="780" Canvas.Top="-50" Opacity="0.45">
+                <Ellipse.Fill>
+                    <RadialGradientBrush>
+                        <GradientStop x:Name="Blob5Stop" Color="#551ABCD1" Offset="0"/>
+                        <GradientStop Color="#151ABCD1" Offset="0.55"/>
+                        <GradientStop Color="#001ABCD1" Offset="1"/>
+                    </RadialGradientBrush>
+                </Ellipse.Fill>
+            </Ellipse>
+        </Canvas>
+
+        <!-- Основная сетка: Боковой сайдбар + Рабочая область -->
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="220"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+
+            <!-- ЛЕВЫЙ САЙДБАР (дизайн Goida Launcher) -->
+            <Border Grid.Column="0" Background="{DynamicResource BgPanel}"
+                    BorderThickness="0,0,1,0" BorderBrush="{DynamicResource PanelBorderBrush}"
+                    Effect="{StaticResource CardShadow}" Panel.ZIndex="2">
+                <Grid Margin="14,18,14,16">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+
+                    <!-- Логотип GOIDA LAUNCHER с иконкой щита -->
+                    <Button Grid.Row="0" x:Name="LogoButton" Background="Transparent" BorderThickness="0"
+                            Cursor="Hand" Click="LogoButton_Click" ToolTip="Goida Launcher" Padding="4"
+                            HorizontalAlignment="Left">
+                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                            <!-- Полигональная эмблема Goida -->
+                            <Border Width="38" Height="38" CornerRadius="10"
+                                    Background="{DynamicResource PlayButtonBrush}" Margin="0,0,10,0"
+                                    Effect="{StaticResource GlowShadow}">
+                                <TextBlock Text="G" FontSize="22" FontWeight="Black" Foreground="#FFFFFF"
+                                           HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                            </Border>
+
+                            <StackPanel VerticalAlignment="Center">
+                                <TextBlock x:Name="LogoTitleText" Text="GOIDA" FontSize="18" FontWeight="Black"
+                                           Foreground="{DynamicResource AccentGreen}"/>
+                                <TextBlock Text="LAUNCHER" FontSize="10" FontWeight="Bold" Margin="0,-2,0,0"
+                                           Foreground="{StaticResource TextSecondary}"/>
+                            </StackPanel>
+                        </StackPanel>
+                    </Button>
+
+                    <!-- Меню навигации (вертикальный список) -->
+                    <StackPanel Grid.Row="1" Margin="0,26,0,0">
+                        <Button x:Name="HomeNavButton" Style="{StaticResource GoidaSidebarButton}"
+                                Click="HomeNavButton_Click">
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="🏠 " FontSize="16" Margin="0,0,10,0"/>
+                                <TextBlock Text="Главная" VerticalAlignment="Center"/>
+                            </StackPanel>
+                        </Button>
+
+                        <Button x:Name="InstallNavButton" Style="{StaticResource GoidaSidebarButton}"
+                                Click="InstallNavButton_Click">
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="📥 " FontSize="16" Margin="0,0,10,0"/>
+                                <TextBlock Text="Установка" VerticalAlignment="Center"/>
+                            </StackPanel>
+                        </Button>
+
+                        <Button x:Name="ModrinthNavButton" Style="{StaticResource GoidaSidebarButton}"
+                                Click="ModrinthNavButton_Click">
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="🧩 " FontSize="16" Margin="0,0,10,0"/>
+                                <TextBlock Text="Моды" VerticalAlignment="Center"/>
+                            </StackPanel>
+                        </Button>
+
+                        <Button x:Name="SkinNavButton" Style="{StaticResource GoidaSidebarButton}"
+                                Click="SkinNavButton_Click">
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="👕 " FontSize="16" Margin="0,0,10,0"/>
+                                <TextBlock Text="Скины" VerticalAlignment="Center"/>
+                            </StackPanel>
+                        </Button>
+
+                        <Button x:Name="SettingsNavButton" Style="{StaticResource GoidaSidebarButton}"
+                                Click="SettingsNavButton_Click">
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="⚙ " FontSize="16" Margin="0,0,10,0"/>
+                                <TextBlock Text="Настройки" VerticalAlignment="Center"/>
+                            </StackPanel>
+                        </Button>
+                    </StackPanel>
+
+                    <!-- Нижний подвал сайдбара -->
+                    <StackPanel Grid.Row="2" VerticalAlignment="Bottom">
+                        <Button x:Name="OpenFolderButton" Content="📁  Папка игры" Height="36"
+                                Style="{StaticResource SecondaryButton}" ToolTip="Открыть папку .minecraft"
+                                Click="OpenFolderButton_Click" Margin="0,0,0,10"
+                                HorizontalContentAlignment="Center"/>
+
+                        <Border Background="#12231A" CornerRadius="8" Padding="10,6"
+                                BorderThickness="1" BorderBrush="#1C402E">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <Ellipse Grid.Column="0" Width="8" Height="8" Fill="#4ADE80"
+                                         VerticalAlignment="Center" Margin="0,0,6,0"/>
+                                <TextBlock Grid.Column="1" Text="Goida Online" FontSize="11"
+                                           Foreground="#86EFAC" FontWeight="SemiBold"
+                                           VerticalAlignment="Center"/>
+                                <TextBlock Grid.Column="2" Text="v6.7" FontSize="10"
+                                           Foreground="#6EE7B7" VerticalAlignment="Center"/>
+                            </Grid>
+                        </Border>
+                    </StackPanel>
+                </Grid>
+            </Border>
+
+            <!-- ПРАВАЯ ЧАСТЬ: Верхняя полоса (аккаунт-карточка) + Контент страницы -->
+            <Grid Grid.Column="1">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="56"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+
+                <!-- Верхний топбар: хлебные крошки/заголовок + карточка активного аккаунта -->
+                <Border Grid.Row="0" Background="{DynamicResource BgPanel}"
+                        BorderThickness="0,0,0,1" BorderBrush="{DynamicResource PanelBorderBrush}"
+                        Padding="24,0,24,0" Panel.ZIndex="1">
+                    <Grid VerticalAlignment="Center">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+
+                        <!-- Заголовок страницы -->
+                        <TextBlock Grid.Column="0" x:Name="PageTitleText" Text="Главная панель"
+                                   FontSize="15" FontWeight="SemiBold" Foreground="{StaticResource TextPrimary}"
+                                   VerticalAlignment="Center"/>
+
+                        <!-- Карточка профиля игрока -->
+                        <Border Grid.Column="2" x:Name="AccountPillBorder" Background="#14192A" CornerRadius="18"
+                                BorderThickness="1" BorderBrush="{DynamicResource PanelBorderBrush}"
+                                Padding="4,4,10,4" Cursor="Hand" MouseLeftButtonUp="AccountPill_Click"
+                                ToolTip="Выбор аккаунта и управление профилем">
+                            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                <!-- Мини-аватар головы скина с круглой рамкой -->
+                                <Border CornerRadius="14" Width="28" Height="28" ClipToBounds="True"
+                                        Background="#252F47" Margin="0,0,10,0">
+                                    <Image x:Name="PlayerAvatarImage" Width="28" Height="28"
+                                           RenderOptions.BitmapScalingMode="NearestNeighbor"/>
+                                </Border>
+
+                                <StackPanel VerticalAlignment="Center" Margin="0,0,8,0">
+                                    <TextBlock x:Name="TopNicknameText" Text="Player" FontSize="12"
+                                               FontWeight="Bold" Foreground="{StaticResource TextPrimary}"/>
+                                    <TextBlock x:Name="TopAccountTypeText" Text="👤 Офлайн" FontSize="10"
+                                               Foreground="{StaticResource TextSecondary}"/>
+                                </StackPanel>
+
+                                <!-- Стрелочка выпадающего меню аккаунта (▼) -->
+                                <Border Width="20" Height="20" CornerRadius="10" Background="#1C2438"
+                                        VerticalAlignment="Center" Margin="0,0,6,0">
+                                    <TextBlock Text="▼" FontSize="8" Foreground="{StaticResource TextSecondary}"
+                                               HorizontalAlignment="Center" VerticalAlignment="Center" Margin="0,1,0,0"/>
+                                </Border>
+
+                                <!-- Быстрая кнопка токена -->
+                                <Button x:Name="TopTokenButton" Content="🔑" Width="26" Height="26"
+                                        ToolTip="Войти по лицензионному токену"
+                                        Style="{StaticResource SecondaryButton}" Padding="0"
+                                        FontSize="11" Click="TopTokenButton_Click"/>
+                            </StackPanel>
+                        </Border>
+
+                        <!-- Выпадающее меню аккаунтов -->
+                        <Popup x:Name="AccountMenuPopup" PlacementTarget="{Binding ElementName=AccountPillBorder}"
+                               Placement="Bottom" StaysOpen="False" AllowsTransparency="True" PopupAnimation="Fade"
+                               VerticalOffset="6" HorizontalOffset="-110">
+                            <Border Background="#121726" BorderBrush="{DynamicResource PanelBorderBrush}"
+                                    BorderThickness="1" CornerRadius="14" Padding="14" MinWidth="290"
+                                    Effect="{StaticResource CardShadow}">
+                                <StackPanel>
+                                    <Grid Margin="0,0,0,10">
+                                        <TextBlock Text="ВЫБОР АККАУНТА" FontSize="11" FontWeight="Bold"
+                                                   Foreground="{StaticResource TextSecondary}" VerticalAlignment="Center"/>
+                                        <Button x:Name="PopupTokenLoginButton" Content="🔑 По токену" HorizontalAlignment="Right"
+                                                Background="Transparent" BorderThickness="0"
+                                                Foreground="{DynamicResource AccentGreen}" Cursor="Hand"
+                                                FontWeight="Bold" FontSize="11" Click="PopupTokenLogin_Click"/>
+                                    </Grid>
+
+                                    <!-- Список сохраненных аккаунтов -->
+                                    <ScrollViewer MaxHeight="220" VerticalScrollBarVisibility="Auto">
+                                        <StackPanel x:Name="AccountsListPanel"/>
+                                    </ScrollViewer>
+
+                                    <Border Height="1" Background="#1D253B" Margin="0,10,0,10"/>
+
+                                    <!-- Быстрое добавление нового офлайн-ника -->
+                                    <TextBlock Text="Добавить офлайн-аккаунт:" FontSize="10" FontWeight="SemiBold"
+                                               Foreground="{StaticResource TextSecondary}" Margin="0,0,0,6"/>
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="Auto"/>
+                                        </Grid.ColumnDefinitions>
+                                        <TextBox x:Name="NewNicknameInput" Height="30" FontSize="12"
+                                                 Background="#1A2033" BorderBrush="#2D3B5C" Foreground="{StaticResource TextPrimary}"
+                                                 Padding="8,4" KeyDown="NewNicknameInput_KeyDown"/>
+                                        <Button Grid.Column="1" x:Name="AddNicknameButton" Content="+" Width="30" Height="30"
+                                                Margin="6,0,0,0" Style="{StaticResource LaunchButton}" FontSize="16"
+                                                Click="AddNicknameButton_Click" ToolTip="Добавить никнейм"/>
+                                    </Grid>
+                                </StackPanel>
+                            </Border>
+                        </Popup>
+                    </Grid>
+                </Border>
+
+                <!-- Хост для страниц -->
+                <ContentControl Grid.Row="1" x:Name="PageHost"/>
+            </Grid>
+        </Grid>
+    </Grid>
+</Window>
