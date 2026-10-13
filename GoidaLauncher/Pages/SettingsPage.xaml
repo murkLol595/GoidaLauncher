@@ -88,7 +88,7 @@
                 <StackPanel Orientation="Horizontal" Margin="0,0,0,16">
                     <RadioButton x:Name="LogoGoidaRadio" Content="GOIDA LAUNCHER" IsChecked="True"
                                  Margin="0,0,20,0" Checked="LogoRadio_Checked"/>
-                    <RadioButton x:Name="LogoMillidaRadio" Content="MILLIDA LAUNCHER"
+                    <RadioButton x:Name="LogoClassicRadio" Content="GOIDA CLASSIC"
                                  Checked="LogoRadio_Checked"/>
                 </StackPanel>
 
@@ -113,7 +113,7 @@
                                  Checked="RadiusRadio_Checked"/>
                 </StackPanel>
 
-                <Button x:Name="ResetThemeButton" Content="Сбросить стиль по умолчанию (Millida)"
+                <Button x:Name="ResetThemeButton" Content="Сбросить стиль по умолчанию"
                         Height="32" Style="{StaticResource SecondaryButton}" HorizontalAlignment="Left"
                         Padding="14,4" Margin="0,0,0,30" Click="ResetThemeButton_Click"/>
 

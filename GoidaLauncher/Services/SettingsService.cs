@@ -39,7 +39,7 @@ public static class SettingsService
                 settings.GameDirectory = Path.Combine(RootDir, "minecraft");
 
             if (string.IsNullOrWhiteSpace(settings.ThemePreset))
-                settings.ThemePreset = "Millida";
+                settings.ThemePreset = "Goida";
 
             if (string.IsNullOrWhiteSpace(settings.LogoTitle))
                 settings.LogoTitle = "GOIDA";

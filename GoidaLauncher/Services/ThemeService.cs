@@ -30,9 +30,9 @@ public static class ThemeService
     {
         new()
         {
-            Id = "Millida",
-            Name = "🌟 Millida Neon",
-            Description = "Фирменный стиль Millida: неоновый фиолетовый, индиго и сапфир",
+            Id = "Goida",
+            Name = "🌟 Goida Neon",
+            Description = "Фирменный стиль Goida: неоновый фиолетовый, индиго и сапфир",
             PrimaryAccent = Color.FromRgb(0x7C, 0x3A, 0xED),      // #7C3AED
             SecondaryAccent = Color.FromRgb(0x25, 0x63, 0xEB),    // #2563EB
             BgDarkStart = Color.FromRgb(0x0A, 0x0D, 0x18),
@@ -140,7 +140,7 @@ public static class ThemeService
 
     public static ThemeDefinition GetPreset(string? id) =>
         Presets.FirstOrDefault(p => string.Equals(p.Id, id, StringComparison.OrdinalIgnoreCase))
-        ?? Presets[0]; // Millida by default
+        ?? Presets[0]; // Goida by default
 
     public static void ApplyTheme(LauncherSettings settings, MainWindow? mainWindow = null)
     {

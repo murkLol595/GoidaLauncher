@@ -11,7 +11,7 @@ public partial class SettingsPage : UserControl
 {
     private static readonly (string Name, string Hex)[] AccentPresets =
     {
-        ("Неон Фиолетовый (Millida)", "#7C3AED"),
+        ("Неон Фиолетовый", "#7C3AED"),
         ("Электрик Синий", "#2563EB"),
         ("Неоновый Циан", "#06B6D4"),
         ("Изумрудный (Goida)", "#10B981"),
@@ -40,8 +40,8 @@ public partial class SettingsPage : UserControl
         DiscordRpcCheck.IsChecked = settings.DiscordRpcEnabled;
         DiscordAppIdBox.Text = settings.DiscordApplicationId ?? "";
 
-        LogoGoidaRadio.IsChecked = !string.Equals(settings.LogoTitle, "MILLIDA", StringComparison.OrdinalIgnoreCase);
-        LogoMillidaRadio.IsChecked = !LogoGoidaRadio.IsChecked;
+        LogoGoidaRadio.IsChecked = !string.Equals(settings.LogoTitle, "GOIDA CLASSIC", StringComparison.OrdinalIgnoreCase);
+        LogoClassicRadio.IsChecked = !LogoGoidaRadio.IsChecked;
 
         AnimatedBgCheck.IsChecked = settings.AnimatedBackgroundEnabled;
         GlassmorphismCheck.IsChecked = settings.GlassmorphismEnabled;
@@ -205,7 +205,7 @@ public partial class SettingsPage : UserControl
     {
         if (_isInitializing) return;
 
-        _settings.LogoTitle = LogoGoidaRadio.IsChecked == true ? "GOIDA" : "MILLIDA";
+        _settings.LogoTitle = LogoGoidaRadio.IsChecked == true ? "GOIDA" : "GOIDA CLASSIC";
         ThemeService.ApplyTheme(_settings, Window.GetWindow(this) as MainWindow);
         SettingsService.Save(_settings);
     }
@@ -233,7 +233,7 @@ public partial class SettingsPage : UserControl
 
     private void ResetThemeButton_Click(object sender, RoutedEventArgs e)
     {
-        _settings.ThemePreset = "Millida";
+        _settings.ThemePreset = "Goida";
         _settings.LogoTitle = "GOIDA";
         _settings.AccentColorHex = "#7C3AED";
         _selectedAccentHex = "#7C3AED";
@@ -243,8 +243,8 @@ public partial class SettingsPage : UserControl
         _settings.GlowEffectEnabled = true;
 
         _isInitializing = true;
-        LogoMillidaRadio.IsChecked = true;
-        LogoGoidaRadio.IsChecked = false;
+        LogoClassicRadio.IsChecked = false;
+        LogoGoidaRadio.IsChecked = true;
         RadiusModernRadio.IsChecked = true;
         AnimatedBgCheck.IsChecked = true;
         GlassmorphismCheck.IsChecked = true;

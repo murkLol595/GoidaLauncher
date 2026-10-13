@@ -51,8 +51,8 @@ public sealed class LauncherSettings
     /// <summary>Акцентный цвет интерфейса, HEX (#RRGGBB).</summary>
     public string AccentColorHex { get; set; } = "#7C3AED";
 
-    /// <summary>Тема оформления: "Millida" (по умолчанию), "Cyberpunk", "Emerald", "Sunset", "Crimson", "Midnight".</summary>
-    public string ThemePreset { get; set; } = "Millida";
+    /// <summary>Тема оформления: "Goida" (по умолчанию), "Cyberpunk", "Emerald", "Sunset", "Crimson", "Midnight".</summary>
+    public string ThemePreset { get; set; } = "Goida";
 
     /// <summary>Включена ли анимация живого фона (плавающие неоновые сферы).</summary>
     public bool AnimatedBackgroundEnabled { get; set; } = true;
