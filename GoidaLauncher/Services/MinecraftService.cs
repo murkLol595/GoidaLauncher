@@ -294,13 +294,27 @@ public sealed class MinecraftService
                     Directory.CreateDirectory(Path.GetDirectoryName(targetPath)!);
 
                     if (!File.Exists(targetPath) || new FileInfo(targetPath).Length != artifact.Size)
-                        await DownloadFileAsync(artifact.Url, targetPath, ct);
+                    {
+                        for (int attempt = 0; attempt < 3; attempt++)
+                        {
+                            try
+                            {
+                                await DownloadFileAsync(artifact.Url, targetPath, ct);
+                                break;
+                            }
+                            catch (Exception) when (attempt < 2)
+                            {
+                                await Task.Delay(250 * (attempt + 1), ct);
+                            }
+                        }
+                    }
 
-                    lock (classpath) classpath.Add(targetPath);
+                    if (File.Exists(targetPath))
+                        lock (classpath) classpath.Add(targetPath);
                 }
                 else if (!string.IsNullOrEmpty(lib.Name))
                 {
-                    // Библиотеки Fabric/Forge: нет блока "downloads", только координаты Maven + базовый URL репозитория
+                    // Библиотеки Fabric/Forge/Quilt: нет блока "downloads", только координаты Maven + базовый URL репозитория
                     var relPath = MavenNameToPath(lib.Name);
                     var targetPath = Path.Combine(_librariesDir, relPath.Replace('/', Path.DirectorySeparatorChar));
                     Directory.CreateDirectory(Path.GetDirectoryName(targetPath)!);
@@ -312,14 +326,21 @@ public sealed class MinecraftService
                             : lib.MavenRepositoryUrl.TrimEnd('/') + "/";
                         var downloadUrl = baseUrl + relPath;
 
-                        try
+                        for (int attempt = 0; attempt < 3; attempt++)
                         {
-                            await DownloadFileAsync(downloadUrl, targetPath, ct);
-                        }
-                        catch (HttpRequestException)
-                        {
-                            // Некоторые библиотеки в install_profile Forge отсутствуют на maven
-                            // (они генерируются локально процессорами) — не считаем это фатальной ошибкой здесь.
+                            try
+                            {
+                                await DownloadFileAsync(downloadUrl, targetPath, ct);
+                                break;
+                            }
+                            catch (Exception) when (attempt < 2)
+                            {
+                                await Task.Delay(250 * (attempt + 1), ct);
+                            }
+                            catch
+                            {
+                                // Некоторые библиотеки в Forge/Quilt могут быть опциональными или генерироваться процессорами
+                            }
                         }
                     }
 
@@ -342,9 +363,23 @@ public sealed class MinecraftService
                     Directory.CreateDirectory(Path.GetDirectoryName(nativeJarPath)!);
 
                     if (!File.Exists(nativeJarPath) || new FileInfo(nativeJarPath).Length != nativeArtifact.Size)
-                        await DownloadFileAsync(nativeArtifact.Url, nativeJarPath, ct);
+                    {
+                        for (int attempt = 0; attempt < 3; attempt++)
+                        {
+                            try
+                            {
+                                await DownloadFileAsync(nativeArtifact.Url, nativeJarPath, ct);
+                                break;
+                            }
+                            catch (Exception) when (attempt < 2)
+                            {
+                                await Task.Delay(250 * (attempt + 1), ct);
+                            }
+                        }
+                    }
 
-                    lock (nativeJarsToExtract) nativeJarsToExtract.Add(nativeJarPath);
+                    if (File.Exists(nativeJarPath))
+                        lock (nativeJarsToExtract) nativeJarsToExtract.Add(nativeJarPath);
                 }
             }
             finally
@@ -468,31 +503,47 @@ public sealed class MinecraftService
         await Task.WhenAll(tasks);
     }
 
-    private async Task DownloadFileAsync(string url, string targetPath, CancellationToken ct)
+    private async Task DownloadFileAsync(string url, string targetPath, CancellationToken ct, int timeoutSeconds = 60)
     {
         var tmpPath = targetPath + ".tmp";
-        if (File.Exists(tmpPath))
-        {
-            try { File.Delete(tmpPath); } catch { }
-        }
-
-        using (var response = await _http.GetAsync(url, HttpCompletionOption.ResponseHeadersRead, ct))
-        {
-            response.EnsureSuccessStatusCode();
-            await using var fs = File.Create(tmpPath);
-            await response.Content.CopyToAsync(fs, ct);
-        }
-
         try
         {
+            if (File.Exists(tmpPath))
+            {
+                try { File.Delete(tmpPath); } catch { }
+            }
+
+            using var timeoutCts = CancellationTokenSource.CreateLinkedTokenSource(ct);
+            timeoutCts.CancelAfter(TimeSpan.FromSeconds(timeoutSeconds));
+
+            using (var response = await _http.GetAsync(url, HttpCompletionOption.ResponseHeadersRead, timeoutCts.Token))
+            {
+                response.EnsureSuccessStatusCode();
+                await using var fs = File.Create(tmpPath);
+                await response.Content.CopyToAsync(fs, timeoutCts.Token);
+            }
+
             if (File.Exists(targetPath))
-                File.Delete(targetPath);
-            File.Move(tmpPath, targetPath);
+            {
+                try { File.Delete(targetPath); } catch { }
+            }
+
+            try
+            {
+                File.Move(tmpPath, targetPath);
+            }
+            catch
+            {
+                File.Copy(tmpPath, targetPath, overwrite: true);
+                try { File.Delete(tmpPath); } catch { }
+            }
         }
-        catch
+        finally
         {
-            File.Copy(tmpPath, targetPath, overwrite: true);
-            try { File.Delete(tmpPath); } catch { }
+            if (File.Exists(tmpPath))
+            {
+                try { File.Delete(tmpPath); } catch { }
+            }
         }
     }
 
