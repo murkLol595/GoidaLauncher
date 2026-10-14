@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using System.IO;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
@@ -32,20 +33,43 @@ public partial class SettingsPage : UserControl
         _settings = settings;
         _selectedAccentHex = settings.AccentColorHex;
 
+        // Память
         MinRamBox.Text = settings.MinRamMb.ToString();
         MaxRamBox.Text = settings.MaxRamMb.ToString();
+
+        int currentMaxRam = settings.MaxRamMb > 0 ? settings.MaxRamMb : 2048;
+        if (currentMaxRam < 1024) currentMaxRam = 1024;
+        if (currentMaxRam > (int)RamSlider.Maximum)
+        {
+            RamSlider.Maximum = Math.Max(16384, ((currentMaxRam + 2047) / 2048) * 2048);
+        }
+        RamSlider.Value = currentMaxRam;
+        UpdateRamDisplay(currentMaxRam);
+
+        // Пути и аргументы
         JavaPathBox.Text = settings.JavaPath ?? "";
         GameDirBox.Text = settings.GameDirectory;
         CustomJvmArgsBox.Text = settings.CustomJvmArgs ?? "";
         DiscordRpcCheck.IsChecked = settings.DiscordRpcEnabled;
         DiscordAppIdBox.Text = settings.DiscordApplicationId ?? "";
 
+        // Разрешение окна
+        SelectResolutionItem(settings.WindowWidth, settings.WindowHeight);
+
+        // Брендинг и эффекты
         LogoGoidaRadio.IsChecked = !string.Equals(settings.LogoTitle, "GOIDA CLASSIC", StringComparison.OrdinalIgnoreCase);
         LogoClassicRadio.IsChecked = !LogoGoidaRadio.IsChecked;
 
         AnimatedBgCheck.IsChecked = settings.AnimatedBackgroundEnabled;
         GlassmorphismCheck.IsChecked = settings.GlassmorphismEnabled;
         GlowEffectCheck.IsChecked = settings.GlowEffectEnabled;
+
+        // Оптимизация игры и лаунчера
+        GameOptimizationCheck.IsChecked = settings.GameOptimizationEnabled;
+        HighPriorityCheck.IsChecked = settings.HighProcessPriority;
+        ForceDiscreteGpuCheck.IsChecked = settings.ForceDiscreteGpu;
+        PauseLauncherCheck.IsChecked = settings.PauseLauncherOnGameLaunch;
+        LowMemoryModeCheck.IsChecked = settings.LowMemoryMode;
 
         if (settings.CornerRadiusValue >= 12) RadiusModernRadio.IsChecked = true;
         else if (settings.CornerRadiusValue is >= 7 and < 12) RadiusClassicRadio.IsChecked = true;
@@ -55,6 +79,92 @@ public partial class SettingsPage : UserControl
         BuildColorSwatches();
 
         _isInitializing = false;
+    }
+
+    private void SelectResolutionItem(string? width, string? height)
+    {
+        string targetTag = $"{width}x{height}";
+        foreach (var item in ResolutionCombo.Items)
+        {
+            if (item is ComboBoxItem cbi && string.Equals(cbi.Tag as string, targetTag, StringComparison.OrdinalIgnoreCase))
+            {
+                ResolutionCombo.SelectedItem = cbi;
+                return;
+            }
+        }
+        ResolutionCombo.SelectedIndex = 0;
+    }
+
+    private void RamSlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
+    {
+        if (_isInitializing) return;
+        int val = (int)Math.Round(RamSlider.Value);
+        _isInitializing = true;
+        MaxRamBox.Text = val.ToString();
+        _isInitializing = false;
+        UpdateRamDisplay(val);
+    }
+
+    private void MaxRamBox_TextChanged(object sender, TextChangedEventArgs e)
+    {
+        if (_isInitializing) return;
+        if (int.TryParse(MaxRamBox.Text, out int val) && val >= 512)
+        {
+            _isInitializing = true;
+            if (val > (int)RamSlider.Maximum)
+            {
+                RamSlider.Maximum = Math.Max(16384, ((val + 2047) / 2048) * 2048);
+            }
+            RamSlider.Value = Math.Min(val, RamSlider.Maximum);
+            _isInitializing = false;
+            UpdateRamDisplay(val);
+        }
+    }
+
+    private void RamPreset_Click(object sender, RoutedEventArgs e)
+    {
+        if (sender is Button btn && btn.Tag is string mbStr && int.TryParse(mbStr, out int mb))
+        {
+            if (mb > (int)RamSlider.Maximum) RamSlider.Maximum = mb;
+            RamSlider.Value = mb;
+            MaxRamBox.Text = mb.ToString();
+            UpdateRamDisplay(mb);
+        }
+    }
+
+    private void UpdateRamDisplay(int mb)
+    {
+        double gb = mb / 1024.0;
+        RamDisplayLabel.Text = $"{mb} МБ ({gb:0.#} ГБ)";
+    }
+
+    private void BrowseJavaButton_Click(object sender, RoutedEventArgs e)
+    {
+        var dlg = new Microsoft.Win32.OpenFileDialog
+        {
+            Title = "Выберите исполняемый файл Java (javaw.exe)",
+            Filter = "Java (javaw.exe;java.exe)|javaw.exe;java.exe|Исполняемые файлы (*.exe)|*.exe|Все файлы (*.*)|*.*",
+            CheckFileExists = true
+        };
+
+        if (dlg.ShowDialog(Window.GetWindow(this)) == true)
+        {
+            JavaPathBox.Text = dlg.FileName;
+        }
+    }
+
+    private void BrowseGameDirButton_Click(object sender, RoutedEventArgs e)
+    {
+        var dlg = new Microsoft.Win32.OpenFolderDialog
+        {
+            Title = "Выберите рабочую папку Minecraft",
+            InitialDirectory = Directory.Exists(GameDirBox.Text) ? GameDirBox.Text : null
+        };
+
+        if (dlg.ShowDialog(Window.GetWindow(this)) == true)
+        {
+            GameDirBox.Text = dlg.FolderName;
+        }
     }
 
     private void BuildThemeCards()
@@ -67,8 +177,8 @@ public partial class SettingsPage : UserControl
 
             var card = new Border
             {
-                Width = 145,
-                Height = 52,
+                Width = 150,
+                Height = 54,
                 Margin = new Thickness(0, 0, 10, 10),
                 CornerRadius = new CornerRadius(10),
                 Background = new SolidColorBrush(Color.FromArgb(0xCC, 0x16, 0x1A, 0x2C)),
@@ -158,10 +268,10 @@ public partial class SettingsPage : UserControl
 
             var swatch = new Border
             {
-                Width = 38,
-                Height = 38,
+                Width = 36,
+                Height = 36,
                 Margin = new Thickness(0, 0, 8, 8),
-                CornerRadius = new CornerRadius(19), // Стильные круглые образцы
+                CornerRadius = new CornerRadius(18),
                 Background = new SolidColorBrush(color),
                 BorderThickness = new Thickness(isSelected ? 3 : 1),
                 BorderBrush = isSelected ? Brushes.White : new SolidColorBrush(Color.FromArgb(0x40, 255, 255, 255)),
@@ -177,7 +287,7 @@ public partial class SettingsPage : UserControl
                     Text = "✓",
                     Foreground = Brushes.White,
                     FontWeight = FontWeights.Bold,
-                    FontSize = 14,
+                    FontSize = 13,
                     HorizontalAlignment = HorizontalAlignment.Center,
                     VerticalAlignment = VerticalAlignment.Center
                 };
@@ -262,7 +372,7 @@ public partial class SettingsPage : UserControl
     {
         try
         {
-            System.IO.Directory.CreateDirectory(_settings.GameDirectory);
+            Directory.CreateDirectory(_settings.GameDirectory);
             Process.Start(new ProcessStartInfo(_settings.GameDirectory) { UseShellExecute = true });
         }
         catch (Exception ex)
@@ -278,15 +388,92 @@ public partial class SettingsPage : UserControl
         if (int.TryParse(MaxRamBox.Text, out var maxRam)) _settings.MaxRamMb = maxRam;
 
         _settings.JavaPath = string.IsNullOrWhiteSpace(JavaPathBox.Text) ? null : JavaPathBox.Text.Trim();
+        _settings.GameDirectory = string.IsNullOrWhiteSpace(GameDirBox.Text) ? _settings.GameDirectory : GameDirBox.Text.Trim();
         _settings.CustomJvmArgs = string.IsNullOrWhiteSpace(CustomJvmArgsBox.Text) ? null : CustomJvmArgsBox.Text.Trim();
         _settings.DiscordRpcEnabled = DiscordRpcCheck.IsChecked == true;
         _settings.DiscordApplicationId = string.IsNullOrWhiteSpace(DiscordAppIdBox.Text) ? null : DiscordAppIdBox.Text.Trim();
         _settings.AccentColorHex = _selectedAccentHex;
 
+        // Сохранение настроек оптимизации
+        _settings.GameOptimizationEnabled = GameOptimizationCheck.IsChecked == true;
+        _settings.HighProcessPriority = HighPriorityCheck.IsChecked == true;
+        _settings.ForceDiscreteGpu = ForceDiscreteGpuCheck.IsChecked == true;
+        _settings.PauseLauncherOnGameLaunch = PauseLauncherCheck.IsChecked == true;
+        _settings.LowMemoryMode = LowMemoryModeCheck.IsChecked == true;
+
+        if (ResolutionCombo.SelectedItem is ComboBoxItem cbi && cbi.Tag is string resTag)
+        {
+            var parts = resTag.Split('x');
+            if (parts.Length == 2)
+            {
+                _settings.WindowWidth = parts[0];
+                _settings.WindowHeight = parts[1];
+            }
+        }
+
         SettingsService.Save(_settings);
 
-        SavedHintText.Text = "✓ Сохранено";
-        await Task.Delay(2000);
-        if (SavedHintText.Text == "✓ Сохранено") SavedHintText.Text = "";
+        SavedToastBorder.Visibility = Visibility.Visible;
+        await Task.Delay(2500);
+        SavedToastBorder.Visibility = Visibility.Collapsed;
+    }
+
+    private void AutoOptimizeButton_Click(object sender, RoutedEventArgs e)
+    {
+        int totalMb = MemoryOptimizer.GetTotalPhysicalMemoryMb();
+        var (minMb, maxMb) = MemoryOptimizer.GetRecommendedRamPreset();
+
+        _settings.MinRamMb = minMb;
+        _settings.MaxRamMb = maxMb;
+        _settings.GameOptimizationEnabled = true;
+        _settings.HighProcessPriority = true;
+        _settings.ForceDiscreteGpu = true;
+        _settings.PauseLauncherOnGameLaunch = true;
+
+        _isInitializing = true;
+        MinRamBox.Text = minMb.ToString();
+        MaxRamBox.Text = maxMb.ToString();
+        if (maxMb > (int)RamSlider.Maximum) RamSlider.Maximum = maxMb;
+        RamSlider.Value = maxMb;
+        UpdateRamDisplay(maxMb);
+
+        GameOptimizationCheck.IsChecked = true;
+        HighPriorityCheck.IsChecked = true;
+        ForceDiscreteGpuCheck.IsChecked = true;
+        PauseLauncherCheck.IsChecked = true;
+        _isInitializing = false;
+
+        SettingsService.Save(_settings);
+
+        MessageBox.Show(Window.GetWindow(this),
+            $"🚀 Авто-оптимизация успешно применена!\n\n" +
+            $"• ОЗУ в системе: {totalMb:N0} МБ (~{totalMb / 1024.0:0.#} ГБ)\n" +
+            $"• Выделено игре: {maxMb} МБ (оптимальный предел без пауз GC)\n" +
+            $"• Включены Aikar's Flags (параллельный сборщик мусора G1GC)\n" +
+            $"• Включён высокий приоритет процесса Minecraft\n" +
+            $"• Активирован принудительный запуск на мощной видеокарте\n" +
+            $"• Включено энергосбережение лаунчера во время игры",
+            "Goida Launcher — Оптимизация",
+            MessageBoxButton.OK,
+            MessageBoxImage.Information);
+    }
+
+    private void TrimMemoryButton_Click(object sender, RoutedEventArgs e)
+    {
+        long beforeBytes = Process.GetCurrentProcess().WorkingSet64;
+        MemoryOptimizer.TrimProcessMemory();
+        long afterBytes = Process.GetCurrentProcess().WorkingSet64;
+
+        double beforeMb = beforeBytes / (1024.0 * 1024.0);
+        double afterMb = afterBytes / (1024.0 * 1024.0);
+
+        MessageBox.Show(Window.GetWindow(this),
+            $"🧹 Память лаунчера успешно очищена!\n\n" +
+            $"До очистки: {beforeMb:0.#} МБ\n" +
+            $"После очистки: {afterMb:0.#} МБ\n" +
+            $"Освобождено: {Math.Max(0, beforeMb - afterMb):0.#} МБ физической памяти.",
+            "Goida Launcher",
+            MessageBoxButton.OK,
+            MessageBoxImage.Information);
     }
 }

@@ -11,6 +11,9 @@
     <LangVersion>latest</LangVersion>
     <Platforms>AnyCPU;x64</Platforms>
     <RuntimeIdentifiers>win-x64</RuntimeIdentifiers>
+    <Version>7.5.0</Version>
+    <AssemblyVersion>7.5.0.0</AssemblyVersion>
+    <FileVersion>7.5.0.0</FileVersion>
   </PropertyGroup>
 
   <PropertyGroup>

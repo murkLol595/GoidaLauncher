@@ -64,6 +64,7 @@ public partial class InstallVersionPage : UserControl
             {
                 Text = icon,
                 FontSize = 20,
+                FontFamily = new FontFamily("Segoe UI Emoji, Segoe UI"),
                 HorizontalAlignment = HorizontalAlignment.Center,
                 Margin = new Thickness(0, 0, 0, 4)
             };
@@ -95,6 +96,7 @@ public partial class InstallVersionPage : UserControl
             {
                 _selectedLoader = id;
                 HighlightActiveLoader(card);
+                EnsureSelectedVersionSupported();
                 RefreshVersionList();
             };
 
@@ -109,6 +111,67 @@ public partial class InstallVersionPage : UserControl
         if (_activeLoaderCard != null)
         {
             HighlightActiveLoader(_activeLoaderCard);
+        }
+    }
+
+    public static bool IsVersionSupportedByLoader(string versionId, string loader, string type)
+    {
+        if (string.Equals(loader, "Vanilla", StringComparison.OrdinalIgnoreCase))
+            return true;
+
+        var match = System.Text.RegularExpressions.Regex.Match(versionId, @"^1\.(\d+)(?:\.(\d+))?$");
+        if (match.Success)
+        {
+            int minor = int.Parse(match.Groups[1].Value);
+            int patch = match.Groups[2].Success ? int.Parse(match.Groups[2].Value) : 0;
+
+            return loader.ToLowerInvariant() switch
+            {
+                "fabric" => minor >= 14,
+                "quilt" => minor >= 14,
+                "neoforge" => minor > 20 || (minor == 20 && patch >= 2),
+                "forge" => minor > 5 || (minor == 5 && patch >= 2),
+                _ => true
+            };
+        }
+
+        if (string.Equals(type, "snapshot", StringComparison.OrdinalIgnoreCase))
+        {
+            if (loader.Equals("Forge", StringComparison.OrdinalIgnoreCase) ||
+                loader.Equals("NeoForge", StringComparison.OrdinalIgnoreCase))
+            {
+                return false;
+            }
+
+            var snapMatch = System.Text.RegularExpressions.Regex.Match(versionId, @"^(\d{2})w(\d{2})");
+            if (snapMatch.Success && int.TryParse(snapMatch.Groups[1].Value, out int year))
+            {
+                return year >= 19;
+            }
+
+            var preMatch = System.Text.RegularExpressions.Regex.Match(versionId, @"^1\.(\d+)");
+            if (preMatch.Success && int.TryParse(preMatch.Groups[1].Value, out int preMinor))
+            {
+                return preMinor >= 14;
+            }
+
+            return false;
+        }
+
+        return false;
+    }
+
+    private void EnsureSelectedVersionSupported()
+    {
+        if (_manifest is null || _manifest.Versions.Count == 0) return;
+
+        bool isCurrentSupported = !string.IsNullOrWhiteSpace(_selectedVersion) &&
+            _manifest.Versions.Any(v => v.Id == _selectedVersion && IsVersionSupportedByLoader(v.Id, _selectedLoader, v.Type));
+
+        if (!isCurrentSupported)
+        {
+            var latestRel = _manifest.Versions.FirstOrDefault(v => v.Type == "release" && IsVersionSupportedByLoader(v.Id, _selectedLoader, v.Type))?.Id;
+            _selectedVersion = latestRel ?? _manifest.Latest.Release;
         }
     }
 
@@ -141,12 +204,7 @@ public partial class InstallVersionPage : UserControl
         try
         {
             _manifest = await _minecraft.GetVersionManifestAsync();
-            if (_manifest.Versions.Count > 0 && string.IsNullOrWhiteSpace(_selectedVersion))
-            {
-                var latestRel = _manifest.Versions.FirstOrDefault(v => v.Type == "release")?.Id;
-                _selectedVersion = latestRel ?? _manifest.Latest.Release;
-            }
-
+            EnsureSelectedVersionSupported();
             RefreshVersionList();
             StatusText.Text = "Готов к установке";
         }
@@ -170,8 +228,14 @@ public partial class InstallVersionPage : UserControl
 
         var items = _manifest.Versions
             .Where(v => showSnapshots || v.Type == "release")
+            .Where(v => IsVersionSupportedByLoader(v.Id, _selectedLoader, v.Type))
             .Where(v => string.IsNullOrWhiteSpace(filter) || v.Id.Contains(filter, StringComparison.OrdinalIgnoreCase))
             .ToList();
+
+        if (items.Count > 0 && !items.Any(v => string.Equals(v.Id, _selectedVersion, StringComparison.OrdinalIgnoreCase)))
+        {
+            _selectedVersion = items[0].Id;
+        }
 
         var accent = (Brush)FindResource("AccentGreen");
 

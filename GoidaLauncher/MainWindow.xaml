@@ -28,7 +28,7 @@
                 <Ellipse.Triggers>
                     <EventTrigger RoutedEvent="Loaded">
                         <BeginStoryboard>
-                            <Storyboard Timeline.DesiredFrameRate="60">
+                            <Storyboard Timeline.DesiredFrameRate="30">
                                 <DoubleAnimationUsingKeyFrames Storyboard.TargetName="Blob1Move" Storyboard.TargetProperty="X"
                                                                 Duration="0:0:30" RepeatBehavior="Forever">
                                     <EasingDoubleKeyFrame KeyTime="0:0:0" Value="0"><EasingDoubleKeyFrame.EasingFunction><SineEase/></EasingDoubleKeyFrame.EasingFunction></EasingDoubleKeyFrame>
@@ -63,7 +63,7 @@
                 <Ellipse.Triggers>
                     <EventTrigger RoutedEvent="Loaded">
                         <BeginStoryboard>
-                            <Storyboard Timeline.DesiredFrameRate="60">
+                            <Storyboard Timeline.DesiredFrameRate="30">
                                 <DoubleAnimationUsingKeyFrames Storyboard.TargetName="Blob2Move" Storyboard.TargetProperty="X"
                                                                 Duration="0:0:34" RepeatBehavior="Forever">
                                     <EasingDoubleKeyFrame KeyTime="0:0:0" Value="0"><EasingDoubleKeyFrame.EasingFunction><SineEase/></EasingDoubleKeyFrame.EasingFunction></EasingDoubleKeyFrame>
@@ -219,7 +219,7 @@
                                 <TextBlock Grid.Column="1" Text="Goida Online" FontSize="11"
                                            Foreground="#86EFAC" FontWeight="SemiBold"
                                            VerticalAlignment="Center"/>
-                                <TextBlock Grid.Column="2" Text="v6.7" FontSize="10"
+                                <TextBlock Grid.Column="2" Text="v7.5" FontSize="10"
                                            Foreground="#6EE7B7" VerticalAlignment="Center"/>
                             </Grid>
                         </Border>

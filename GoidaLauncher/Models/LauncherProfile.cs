@@ -83,4 +83,19 @@ public sealed class LauncherSettings
 
     /// <summary>Дополнительные аргументы JVM (через пробел), добавляются при каждом запуске игры.</summary>
     public string? CustomJvmArgs { get; set; }
+
+    /// <summary>Включить комплексную оптимизацию JVM (Aikar's Flags, параллельный сборщик G1GC, String Deduplication).</summary>
+    public bool GameOptimizationEnabled { get; set; } = true;
+
+    /// <summary>Запуск процесса Minecraft с высоким приоритетом в Windows для устранения микрофризов.</summary>
+    public bool HighProcessPriority { get; set; } = true;
+
+    /// <summary>Принудительно использовать дискретную видеокарту (NVIDIA/AMD) и многопоточный OpenGL.</summary>
+    public bool ForceDiscreteGpu { get; set; } = true;
+
+    /// <summary>Приостанавливать лаунчер (сворачивать и выгружать память) при активной игре для максимального FPS.</summary>
+    public bool PauseLauncherOnGameLaunch { get; set; } = true;
+
+    /// <summary>Режим экономии ресурсов лаунчера (Low-RAM / Low-GPU mode).</summary>
+    public bool LowMemoryMode { get; set; } = false;
 }

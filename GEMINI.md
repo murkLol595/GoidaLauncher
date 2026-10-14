@@ -1,6 +1,6 @@
 # Project Context for Google Gemini / Antigravity Agent
 
-## 🚀 Goida Launcher v6.7
+## 🚀 Goida Launcher v7.5
 Goida Launcher is a modern, high-performance offline Minecraft launcher built on .NET 10.0 and WPF (Windows Presentation Foundation), co-developed with **Google Antigravity** and **Gemini AI**.
 
 ---

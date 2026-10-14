@@ -1,6 +1,6 @@
 ; Goida Launcher Inno Setup 6 Script
 #define MyAppName "Goida Launcher"
-#define MyAppVersion "6.7"
+#define MyAppVersion "7.5"
 #define MyAppPublisher "Goida Team"
 #define MyAppExeName "GoidaLauncher.exe"
 
@@ -13,7 +13,7 @@ DefaultDirName={autopf}\{#MyAppName}
 DefaultGroupName={#MyAppName}
 DisableProgramGroupPage=yes
 OutputDir=InstallerOutput
-OutputBaseFilename=GoidaLauncher-Setup-v6.7
+OutputBaseFilename=GoidaLauncher-Setup-v7.5
 SetupIconFile=GoidaLauncher\Assets\icon.ico
 Compression=lzma2/ultra64
 SolidCompression=yes

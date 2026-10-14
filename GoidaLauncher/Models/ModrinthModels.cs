@@ -7,6 +7,12 @@ public sealed class ModrinthSearchResponse
     [JsonPropertyName("hits")]
     public List<ModrinthHit> Hits { get; set; } = new();
 
+    [JsonPropertyName("offset")]
+    public int Offset { get; set; }
+
+    [JsonPropertyName("limit")]
+    public int Limit { get; set; }
+
     [JsonPropertyName("total_hits")]
     public int TotalHits { get; set; }
 }
@@ -33,6 +39,12 @@ public sealed class ModrinthHit
 
     [JsonPropertyName("icon_url")]
     public string? IconUrl { get; set; }
+
+    [JsonPropertyName("author")]
+    public string? Author { get; set; }
+
+    [JsonPropertyName("categories")]
+    public List<string>? Categories { get; set; }
 
     public string DownloadsFormatted =>
         Downloads >= 1_000_000 ? $"{Downloads / 1_000_000.0:0.#}M" :

@@ -156,6 +156,7 @@ public partial class HomePage : UserControl
         "Fabric" => "fabric",
         "Quilt" => "quilt",
         "Forge" => "forge",
+        "NeoForge" => "neoforge",
         _ => null,
     };
 
@@ -413,6 +414,9 @@ public partial class HomePage : UserControl
                 JavaPath = _settings.JavaPath,
                 ExtraJvmArgs = _settings.CustomJvmArgs,
                 GameDirectoryOverride = instanceDir,
+                OptimizeGame = _settings.GameOptimizationEnabled,
+                HighPriority = _settings.HighProcessPriority,
+                ForceDiscreteGpu = _settings.ForceDiscreteGpu,
             };
 
             var process = _minecraft.Launch(details, options);
@@ -424,8 +428,18 @@ public partial class HomePage : UserControl
             process.BeginOutputReadLine();
             process.BeginErrorReadLine();
 
-            Log("Игра запущена. Лаунчер можно свернуть или закрыть игру кнопкой «ЗАКРЫТЬ».");
+            Log("Игра запущена. Лаунчер переведён в режим энергосбережения для максимального FPS.");
             UpdateLaunchButtonState(isGameRunning: true);
+
+            if (_settings.PauseLauncherOnGameLaunch)
+            {
+                PlayerModel3D.Pause();
+                if (OwnerWindow != null && OwnerWindow.WindowState != WindowState.Minimized)
+                {
+                    OwnerWindow.WindowState = WindowState.Minimized;
+                }
+                MemoryOptimizer.TrimProcessMemory();
+            }
 
             RememberNickname(account.Username);
             SettingsService.Save(_settings);
@@ -436,6 +450,17 @@ public partial class HomePage : UserControl
                 _runningGameProcess = null;
                 UpdateLaunchButtonState(isGameRunning: false);
                 Log("Игра завершена.");
+
+                if (_settings.PauseLauncherOnGameLaunch)
+                {
+                    if (OwnerWindow != null && OwnerWindow.WindowState == WindowState.Minimized)
+                    {
+                        OwnerWindow.WindowState = WindowState.Normal;
+                    }
+                    PlayerModel3D.Resume();
+                }
+                MemoryOptimizer.TrimProcessMemory();
+
                 await ClearDiscordRpcAsync();
             });
 

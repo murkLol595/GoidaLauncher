@@ -28,6 +28,15 @@ public sealed class LaunchOptions
 
     /// <summary>Папка запуска (mods/saves/config/resourcepacks) — если не задана, используется общий корень.</summary>
     public string? GameDirectoryOverride { get; init; }
+
+    /// <summary>Включить комплексную оптимизацию JVM (Aikar's Flags, параллельный сборщик G1GC, String Deduplication).</summary>
+    public bool OptimizeGame { get; init; } = true;
+
+    /// <summary>Запуск процесса Minecraft с высоким приоритетом в Windows для устранения микрофризов.</summary>
+    public bool HighPriority { get; init; } = true;
+
+    /// <summary>Принудительно использовать дискретную видеокарту (NVIDIA/AMD) и многопоточный OpenGL.</summary>
+    public bool ForceDiscreteGpu { get; init; } = true;
 }
 
 public sealed class MinecraftService
@@ -628,8 +637,37 @@ public sealed class MinecraftService
             $"-Xmx{options.MaxRamMb}M",
             $"-Djava.library.path={versionNativesDir}",
             "-Dfile.encoding=UTF-8",
-            "-XX:+UseG1GC",
         };
+
+        if (options.OptimizeGame)
+        {
+            // Продвинутые флаги сборщика мусора и тюнинга производительности Minecraft (Aikar's Flags + G1GC)
+            jvmArgs.AddRange(new[]
+            {
+                "-XX:+UseG1GC",
+                "-XX:+ParallelRefProcEnabled",
+                "-XX:MaxGCPauseMillis=200",
+                "-XX:+UnlockExperimentalVMOptions",
+                "-XX:+DisableExplicitGC",
+                "-XX:+AlwaysPreTouch",
+                "-XX:G1NewSizePercent=30",
+                "-XX:G1MaxNewSizePercent=40",
+                "-XX:G1ReservePercent=20",
+                "-XX:G1HeapWastePercent=5",
+                "-XX:G1MixedGCCountTarget=4",
+                "-XX:InitiatingHeapOccupancyPercent=15",
+                "-XX:G1MixedGCLiveThresholdPercent=90",
+                "-XX:G1RSetUpdatingPauseTimePercent=5",
+                "-XX:SurvivorRatio=32",
+                "-XX:+PerfDisableSharedMem",
+                "-XX:MaxTenuringThreshold=1",
+                "-XX:+UseStringDeduplication"
+            });
+        }
+        else
+        {
+            jvmArgs.Add("-XX:+UseG1GC");
+        }
 
         if (!string.IsNullOrWhiteSpace(options.ExtraJvmArgs))
             jvmArgs.AddRange(options.ExtraJvmArgs.Split(' ', StringSplitOptions.RemoveEmptyEntries));
@@ -669,11 +707,34 @@ public sealed class MinecraftService
             CreateNoWindow = true,
         };
 
+        if (options.ForceDiscreteGpu)
+        {
+            // Принудительное переключение на дискретную графику NVIDIA / AMD и включение многопоточного OpenGL
+            psi.EnvironmentVariables["SHIM_MCCOMPAT"] = "0xD";
+            psi.EnvironmentVariables["__GL_THREADED_OPTIMIZATIONS"] = "1";
+            psi.EnvironmentVariables["mesa_glthread"] = "true";
+            psi.EnvironmentVariables["__NV_PRIME_RENDER_OFFLOAD"] = "1";
+            psi.EnvironmentVariables["__GLX_VENDOR_LIBRARY_NAME"] = "nvidia";
+        }
+
         foreach (var arg in allArgs)
             psi.ArgumentList.Add(arg);
 
         var process = new Process { StartInfo = psi, EnableRaisingEvents = true };
         process.Start();
+
+        if (options.HighPriority)
+        {
+            try
+            {
+                process.PriorityClass = ProcessPriorityClass.High;
+            }
+            catch
+            {
+                try { process.PriorityClass = ProcessPriorityClass.AboveNormal; } catch { }
+            }
+        }
+
         return process;
     }
 

@@ -2,122 +2,478 @@
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              FontFamily="Segoe UI">
-    <Grid Margin="32">
-        <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="*"/>
-            <ColumnDefinition Width="480"/>
-            <ColumnDefinition Width="*"/>
-        </Grid.ColumnDefinitions>
 
-        <ScrollViewer Grid.Column="1" VerticalScrollBarVisibility="Auto">
-            <StackPanel>
+    <UserControl.Resources>
+        <!-- Современные стили для страницы настроек -->
+        <Style x:Key="SettingsCard" TargetType="Border" BasedOn="{StaticResource GoidaCard}">
+            <Setter Property="Padding" Value="18,16"/>
+            <Setter Property="Margin" Value="0,0,0,16"/>
+        </Style>
 
-                <Grid Margin="0,0,0,20">
-                    <TextBlock Text="Настройки" FontSize="24" FontWeight="Bold"
-                               Foreground="{StaticResource TextPrimary}"/>
-                    <Button x:Name="SaveButton" Content="Сохранить" Width="120" Height="34"
-                            HorizontalAlignment="Right" Style="{StaticResource LaunchButton}"
-                            FontSize="13" Click="SaveButton_Click"/>
-                </Grid>
+        <Style x:Key="CardHeaderTitle" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="Foreground" Value="{StaticResource TextPrimary}"/>
+            <Setter Property="VerticalAlignment" Value="Center"/>
+        </Style>
 
-                <TextBlock x:Name="SavedHintText" Text="" FontSize="12"
-                           Foreground="{DynamicResource AccentGreen}" Margin="0,0,0,12"/>
+        <Style x:Key="CardSubTitle" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="11"/>
+            <Setter Property="Foreground" Value="{StaticResource TextSecondary}"/>
+            <Setter Property="Margin" Value="0,2,0,0"/>
+        </Style>
 
-                <TextBlock Text="ПАМЯТЬ" FontSize="11" FontWeight="Bold"
-                           Foreground="{StaticResource TextSecondary}" Margin="0,0,0,8"/>
-                <Grid Margin="0,0,0,20">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="*"/>
-                        <ColumnDefinition Width="8"/>
-                        <ColumnDefinition Width="*"/>
-                    </Grid.ColumnDefinitions>
-                    <StackPanel Grid.Column="0">
-                        <TextBlock Text="Мин. (МБ)" Foreground="{StaticResource TextSecondary}" FontSize="11"/>
-                        <TextBox x:Name="MinRamBox" Text="1024"/>
-                    </StackPanel>
-                    <StackPanel Grid.Column="2">
-                        <TextBlock Text="Макс. (МБ)" Foreground="{StaticResource TextSecondary}" FontSize="11"/>
-                        <TextBox x:Name="MaxRamBox" Text="2048"/>
-                    </StackPanel>
-                </Grid>
+        <Style x:Key="FieldLabel" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="11"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Foreground" Value="{StaticResource TextSecondary}"/>
+            <Setter Property="Margin" Value="0,0,0,5"/>
+        </Style>
 
-                <TextBlock Text="JAVA И ПАПКА ИГРЫ" FontSize="11" FontWeight="Bold"
-                           Foreground="{StaticResource TextSecondary}" Margin="0,0,0,8"/>
-                <TextBlock Text="Путь к Java (необязательно)" Foreground="{StaticResource TextSecondary}" Margin="0,0,0,4"/>
-                <TextBox x:Name="JavaPathBox" Margin="0,0,0,12"
-                         ToolTip="Оставьте пустым, чтобы лаунчер сам нашёл javaw.exe"/>
+        <!-- Современный Toggle Switch (Переключатель) -->
+        <Style x:Key="ModernToggleSwitch" TargetType="CheckBox">
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Foreground" Value="{StaticResource TextPrimary}"/>
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="CheckBox">
+                        <Grid Background="Transparent" Margin="0,4,0,4">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <ContentPresenter Grid.Column="0" VerticalAlignment="Center" Margin="0,0,14,0"/>
+                            <Border x:Name="SwitchTrack" Grid.Column="1" Width="42" Height="22" CornerRadius="11"
+                                    Background="#222B3F" BorderThickness="1" BorderBrush="#354463">
+                                <Border x:Name="SwitchThumb" Width="16" Height="16" CornerRadius="8"
+                                        Background="#94A3B8" HorizontalAlignment="Left" Margin="2,0,0,0"/>
+                            </Border>
+                        </Grid>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsChecked" Value="True">
+                                <Setter TargetName="SwitchTrack" Property="Background" Value="{DynamicResource AccentGreen}"/>
+                                <Setter TargetName="SwitchTrack" Property="BorderBrush" Value="{DynamicResource AccentGreenDark}"/>
+                                <Setter TargetName="SwitchThumb" Property="HorizontalAlignment" Value="Right"/>
+                                <Setter TargetName="SwitchThumb" Property="Margin" Value="0,0,2,0"/>
+                                <Setter TargetName="SwitchThumb" Property="Background" Value="#FFFFFF"/>
+                            </Trigger>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="SwitchTrack" Property="Opacity" Value="0.92"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
 
-                <TextBlock Text="Папка игры" Foreground="{StaticResource TextSecondary}" Margin="0,0,0,4"/>
-                <Grid Margin="0,0,0,20">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="*"/>
-                        <ColumnDefinition Width="8"/>
-                        <ColumnDefinition Width="Auto"/>
-                    </Grid.ColumnDefinitions>
-                    <TextBox x:Name="GameDirBox" Grid.Column="0" IsReadOnly="True"/>
-                    <Button x:Name="OpenGameDirButton" Grid.Column="2" Content="Открыть" Width="80"
-                            Style="{StaticResource SecondaryButton}" Click="OpenGameDirButton_Click"/>
-                </Grid>
+        <!-- Современный TextBox с фокусом и скруглением -->
+        <Style x:Key="ModernInputBox" TargetType="TextBox">
+            <Setter Property="Background" Value="#101524"/>
+            <Setter Property="Foreground" Value="{StaticResource TextPrimary}"/>
+            <Setter Property="BorderBrush" Value="#25334D"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Padding" Value="10,7"/>
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="CaretBrush" Value="White"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="TextBox">
+                        <Border x:Name="bd" Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="8">
+                            <ScrollViewer x:Name="PART_ContentHost" Margin="0" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="bd" Property="BorderBrush" Value="#3F537A"/>
+                            </Trigger>
+                            <Trigger Property="IsFocused" Value="True">
+                                <Setter TargetName="bd" Property="BorderBrush" Value="{DynamicResource AccentGreen}"/>
+                                <Setter TargetName="bd" Property="Background" Value="#141B2E"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
 
-                <TextBlock Text="Доп. параметры запуска (JVM)" Foreground="{StaticResource TextSecondary}"
-                           FontSize="11" Margin="0,0,0,4"/>
-                <TextBox x:Name="CustomJvmArgsBox" Margin="0,0,0,20"
-                         ToolTip="Например: -XX:+UseZGC. Добавляются в конец списка при каждом запуске."/>
+        <!-- Современный Слайдер -->
+        <Style x:Key="ModernSlider" TargetType="Slider">
+            <Setter Property="Stylus.IsFlicksEnabled" Value="false"/>
+            <Setter Property="Foreground" Value="{DynamicResource AccentGreen}"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Slider">
+                        <Grid VerticalAlignment="Center" Height="26">
+                            <Border Height="6" Background="#1D263B" CornerRadius="3" VerticalAlignment="Center"/>
+                            <Track x:Name="PART_Track">
+                                <Track.Thumb>
+                                    <Thumb>
+                                        <Thumb.Template>
+                                            <ControlTemplate TargetType="Thumb">
+                                                <Grid Width="22" Height="22" Cursor="Hand">
+                                                    <Ellipse Fill="{DynamicResource AccentGreen}" Width="18" Height="18"
+                                                             Stroke="#FFFFFF" StrokeThickness="2">
+                                                        <Ellipse.Effect>
+                                                            <DropShadowEffect Color="{DynamicResource AccentColorRaw}" BlurRadius="8" ShadowDepth="0" Opacity="0.6"/>
+                                                        </Ellipse.Effect>
+                                                    </Ellipse>
+                                                </Grid>
+                                            </ControlTemplate>
+                                        </Thumb.Template>
+                                    </Thumb>
+                                </Track.Thumb>
+                            </Track>
+                        </Grid>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
 
-                <TextBlock Text="DISCORD" FontSize="11" FontWeight="Bold"
-                           Foreground="{StaticResource TextSecondary}" Margin="0,0,0,8"/>
-                <CheckBox x:Name="DiscordRpcCheck" Content="Показывать статус в Discord (Rich Presence)"
-                          Margin="0,0,0,8"/>
-                <TextBlock Text="Discord Application ID (см. README)" Foreground="{StaticResource TextSecondary}"
-                           FontSize="11" Margin="0,0,0,4"/>
-                <TextBox x:Name="DiscordAppIdBox" Margin="0,0,0,20"/>
+        <!-- Кнопки пресетов RAM -->
+        <Style x:Key="RamPillButton" TargetType="Button">
+            <Setter Property="Background" Value="#161F33"/>
+            <Setter Property="Foreground" Value="{StaticResource TextSecondary}"/>
+            <Setter Property="BorderBrush" Value="#253555"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="FontSize" Value="11"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Padding" Value="10,5"/>
+            <Setter Property="Margin" Value="0,0,6,0"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="b" Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="6" Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="b" Property="Background" Value="#223150"/>
+                                <Setter TargetName="b" Property="BorderBrush" Value="{DynamicResource AccentGreen}"/>
+                                <Setter Property="Foreground" Value="#FFFFFF"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </UserControl.Resources>
 
-                <TextBlock Text="ДИЗАЙН И СТИЛЬ ЛАУНЧЕРА" FontSize="11" FontWeight="Bold"
-                           Foreground="{StaticResource TextSecondary}" Margin="0,0,0,10"/>
+    <Grid Margin="28,14,28,20">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
 
-                <!-- Пресеты тем -->
-                <TextBlock Text="Стиль оформления" Foreground="{StaticResource TextSecondary}" FontSize="11" Margin="0,0,0,6"/>
-                <WrapPanel x:Name="ThemesPanel" Margin="0,0,0,16"/>
+        <!-- ВЕРХНЯЯ ШАПКА: Заголовок + Уведомление + Кнопка Сохранить -->
+        <Grid Grid.Row="0" Margin="0,0,0,16">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
 
-                <!-- Акцентный цвет -->
-                <TextBlock Text="Акцентный цвет" Foreground="{StaticResource TextSecondary}" FontSize="11" Margin="0,0,0,6"/>
-                <WrapPanel x:Name="ColorSwatchPanel" Margin="0,0,0,16"/>
-
-                <!-- Стиль логотипа -->
-                <TextBlock Text="Стиль логотипа в шапке" Foreground="{StaticResource TextSecondary}" FontSize="11" Margin="0,0,0,6"/>
-                <StackPanel Orientation="Horizontal" Margin="0,0,0,16">
-                    <RadioButton x:Name="LogoGoidaRadio" Content="GOIDA LAUNCHER" IsChecked="True"
-                                 Margin="0,0,20,0" Checked="LogoRadio_Checked"/>
-                    <RadioButton x:Name="LogoClassicRadio" Content="GOIDA CLASSIC"
-                                 Checked="LogoRadio_Checked"/>
-                </StackPanel>
-
-                <!-- Эффекты -->
-                <TextBlock Text="ЭФФЕКТЫ И ОФОРМЛЕНИЕ" FontSize="11" FontWeight="Bold"
-                           Foreground="{StaticResource TextSecondary}" Margin="0,0,0,8"/>
-                <CheckBox x:Name="AnimatedBgCheck" Content="Анимированный живой фон (плавающие сферы)"
-                          Margin="0,0,0,8" Click="DesignOption_Changed"/>
-                <CheckBox x:Name="GlassmorphismCheck" Content="Эффект матового стекла (Glassmorphism)"
-                          Margin="0,0,0,8" Click="DesignOption_Changed"/>
-                <CheckBox x:Name="GlowEffectCheck" Content="Неоновое свечение кнопки «Играть» (Glow Effect)"
-                          Margin="0,0,0,16" Click="DesignOption_Changed"/>
-
-                <!-- Скругление углов -->
-                <TextBlock Text="Скругление углов" Foreground="{StaticResource TextSecondary}" FontSize="11" Margin="0,0,0,6"/>
-                <StackPanel Orientation="Horizontal" Margin="0,0,0,20">
-                    <RadioButton x:Name="RadiusModernRadio" Content="Современное (14px)" Margin="0,0,16,0"
-                                 Checked="RadiusRadio_Checked"/>
-                    <RadioButton x:Name="RadiusClassicRadio" Content="Классика (8px)" Margin="0,0,16,0"
-                                 Checked="RadiusRadio_Checked"/>
-                    <RadioButton x:Name="RadiusSharpRadio" Content="Прямое (4px)"
-                                 Checked="RadiusRadio_Checked"/>
-                </StackPanel>
-
-                <Button x:Name="ResetThemeButton" Content="Сбросить стиль по умолчанию"
-                        Height="32" Style="{StaticResource SecondaryButton}" HorizontalAlignment="Left"
-                        Padding="14,4" Margin="0,0,0,30" Click="ResetThemeButton_Click"/>
-
+            <StackPanel Grid.Column="0" VerticalAlignment="Center">
+                <TextBlock Text="Настройки лаунчера" FontSize="22" FontWeight="Bold"
+                           Foreground="{StaticResource TextPrimary}"/>
+                <TextBlock Text="Параметры производительности, среда Java, выделение памяти и персонализация"
+                           FontSize="12" Foreground="{StaticResource TextSecondary}" Margin="0,2,0,0"/>
             </StackPanel>
+
+            <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                <!-- Всплывающий индикатор успешного сохранения -->
+                <Border x:Name="SavedToastBorder" Background="#142B20" CornerRadius="16"
+                        BorderBrush="#256B47" BorderThickness="1" Padding="12,5"
+                        Margin="0,0,14,0" Visibility="Collapsed">
+                    <TextBlock x:Name="SavedHintText" Text="✓ Настройки сохранены"
+                               FontSize="12" FontWeight="SemiBold" Foreground="#4ADE80"/>
+                </Border>
+
+                <!-- Главная кнопка Сохранить с акцентным стилем -->
+                <Button x:Name="SaveButton" Content="💾  Сохранить" Width="135" Height="36"
+                        Style="{StaticResource LaunchButton}" FontSize="13" FontWeight="Bold"
+                        Click="SaveButton_Click"/>
+            </StackPanel>
+        </Grid>
+
+        <!-- ОСНОВНАЯ ОБЛАСТЬ: ДВУХКОЛОНОЧНЫЙ СОВРЕМЕННЫЙ МАКЕТ С КАРТОЧКАМИ -->
+        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+            <Grid MaxWidth="1080" HorizontalAlignment="Stretch" Margin="0,0,10,20">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="1*"/>
+                    <ColumnDefinition Width="20"/>
+                    <ColumnDefinition Width="1.08*"/>
+                </Grid.ColumnDefinitions>
+
+                <!-- ЛЕВАЯ КОЛОНКА: СИСТЕМА, ПАМЯТЬ, JAVA, DISCORD -->
+                <StackPanel Grid.Column="0">
+
+                    <!-- КАРТОЧКА 1: ОПЕРАТИВНАЯ ПАМЯТЬ (RAM) -->
+                    <Border Style="{StaticResource SettingsCard}">
+                        <StackPanel>
+                            <!-- Заголовок карточки памяти с бейджем -->
+                            <Grid Margin="0,0,0,12">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <StackPanel Grid.Column="0">
+                                    <TextBlock Text="⚡  ОПЕРАТИВНАЯ ПАМЯТЬ" Style="{StaticResource CardHeaderTitle}"/>
+                                    <TextBlock Text="Выделение памяти для комфортной игры с модами" Style="{StaticResource CardSubTitle}"/>
+                                </StackPanel>
+                                <Border Grid.Column="1" Background="#162238" CornerRadius="12"
+                                        BorderBrush="{DynamicResource AccentGreen}" BorderThickness="1"
+                                        Padding="10,4" VerticalAlignment="Center">
+                                    <TextBlock x:Name="RamDisplayLabel" Text="2048 МБ (2.0 ГБ)"
+                                               FontSize="12" FontWeight="Bold" Foreground="{DynamicResource AccentGreen}"/>
+                                </Border>
+                            </Grid>
+
+                            <!-- Интерактивный слайдер RAM -->
+                            <Slider x:Name="RamSlider" Style="{StaticResource ModernSlider}"
+                                    Minimum="1024" Maximum="16384" SmallChange="512" LargeChange="1024"
+                                    IsSnapToTickEnabled="True" TickFrequency="512" Margin="0,4,0,8"
+                                    ValueChanged="RamSlider_ValueChanged"/>
+
+                            <!-- Быстрые пресеты RAM -->
+                            <TextBlock Text="Быстрый выбор:" FontSize="10" Foreground="{StaticResource TextSecondary}" Margin="0,0,0,6"/>
+                            <WrapPanel Margin="0,0,0,14">
+                                <Button Content="2 ГБ" Style="{StaticResource RamPillButton}" Click="RamPreset_Click" Tag="2048"/>
+                                <Button Content="4 ГБ  ⭐" Style="{StaticResource RamPillButton}" ToolTip="Рекомендуется для модов" Click="RamPreset_Click" Tag="4096"/>
+                                <Button Content="6 ГБ" Style="{StaticResource RamPillButton}" Click="RamPreset_Click" Tag="6144"/>
+                                <Button Content="8 ГБ" Style="{StaticResource RamPillButton}" Click="RamPreset_Click" Tag="8192"/>
+                                <Button Content="12 ГБ" Style="{StaticResource RamPillButton}" Click="RamPreset_Click" Tag="12288"/>
+                                <Button Content="16 ГБ" Style="{StaticResource RamPillButton}" Click="RamPreset_Click" Tag="16384"/>
+                            </WrapPanel>
+
+                            <!-- Точные поля ввода Min / Max -->
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="12"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                <StackPanel Grid.Column="0">
+                                    <TextBlock Text="Минимум (МБ):" Style="{StaticResource FieldLabel}"/>
+                                    <TextBox x:Name="MinRamBox" Text="1024" Style="{StaticResource ModernInputBox}"/>
+                                </StackPanel>
+                                <StackPanel Grid.Column="2">
+                                    <TextBlock Text="Максимум (МБ):" Style="{StaticResource FieldLabel}"/>
+                                    <TextBox x:Name="MaxRamBox" Text="2048" Style="{StaticResource ModernInputBox}" TextChanged="MaxRamBox_TextChanged"/>
+                                </StackPanel>
+                            </Grid>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- КАРТОЧКА 2: ОПТИМИЗАЦИЯ И МАКСИМАЛЬНЫЙ FPS -->
+                    <Border Style="{StaticResource SettingsCard}" BorderBrush="{DynamicResource AccentGreen}">
+                        <StackPanel>
+                            <Grid Margin="0,0,0,12">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <StackPanel Grid.Column="0">
+                                    <TextBlock Text="🚀  ОПТИМИЗАЦИЯ ИГРЫ И ЛАУНЧЕРА" Style="{StaticResource CardHeaderTitle}"/>
+                                    <TextBlock Text="Авто-тюнинг параметров для максимального FPS и плавности" Style="{StaticResource CardSubTitle}"/>
+                                </StackPanel>
+                                <Border Grid.Column="1" Background="#183626" CornerRadius="10"
+                                        BorderBrush="#22C55E" BorderThickness="1" Padding="8,4" VerticalAlignment="Center">
+                                    <TextBlock Text="BOOST" FontSize="11" FontWeight="Bold" Foreground="#34D399"/>
+                                </Border>
+                            </Grid>
+
+                            <!-- Кнопка авто-оптимизации -->
+                            <Button x:Name="AutoOptimizeButton" Content="⚡  Применить авто-оптимизацию под мой ПК"
+                                    Style="{StaticResource LaunchButton}" Height="38" FontSize="13" Margin="0,0,0,12"
+                                    Click="AutoOptimizeButton_Click"/>
+
+                            <!-- Тумблеры оптимизации игры -->
+                            <CheckBox x:Name="GameOptimizationCheck"
+                                      Content="Умная оптимизация JVM (Aikar's Flags + G1GC тюнинг)"
+                                      ToolTip="Устраняет микрофризы при генерации и прогрузке чанков, оптимизирует сборку мусора и память"
+                                      Style="{StaticResource ModernToggleSwitch}" Margin="0,2,0,4"/>
+
+                            <CheckBox x:Name="HighPriorityCheck"
+                                      Content="Высокий приоритет процесса игры в Windows"
+                                      ToolTip="Выделяет максимум ресурсов процессора под Minecraft, снижает задержки ввода"
+                                      Style="{StaticResource ModernToggleSwitch}" Margin="0,2,0,4"/>
+
+                            <CheckBox x:Name="ForceDiscreteGpuCheck"
+                                      Content="Принудительный запуск на мощной видеокарте (NVIDIA/AMD)"
+                                      ToolTip="Активирует дискретный видеочип и включает аппаратный многопоточный OpenGL"
+                                      Style="{StaticResource ModernToggleSwitch}" Margin="0,2,0,4"/>
+
+                            <Border Height="1" Background="#1D273B" Margin="0,6,0,6"/>
+
+                            <!-- Тумблеры оптимизации лаунчера -->
+                            <CheckBox x:Name="PauseLauncherCheck"
+                                      Content="Режим энергосбережения лаунчера во время игры"
+                                      ToolTip="Сворачивает лаунчер, останавливает 3D-модели и выгружает память пока открыт Minecraft"
+                                      Style="{StaticResource ModernToggleSwitch}" Margin="0,2,0,4"/>
+
+                            <CheckBox x:Name="LowMemoryModeCheck"
+                                      Content="Режим пониженного потребления памяти (Low-RAM Mode)"
+                                      ToolTip="Снижает частоту фоновой анимации и минимизирует внутренние буферы лаунчера"
+                                      Style="{StaticResource ModernToggleSwitch}" Margin="0,2,0,8"/>
+
+                            <!-- Кнопка ручной очистки памяти прямо сейчас -->
+                            <Button x:Name="TrimMemoryButton" Content="🧹  Очистить память лаунчера сейчас"
+                                    Style="{StaticResource SecondaryButton}" Height="30" FontSize="11" HorizontalAlignment="Left"
+                                    Padding="12,0" Click="TrimMemoryButton_Click"/>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- КАРТОЧКА 3: JAVA, ПАПКА И РАЗРЕШЕНИЕ -->
+                    <Border Style="{StaticResource SettingsCard}">
+                        <StackPanel>
+                            <TextBlock Text="☕  СРЕДА JAVA И ПАРАМЕТРЫ ЗАПУСКА" Style="{StaticResource CardHeaderTitle}" Margin="0,0,0,4"/>
+                            <TextBlock Text="Пути к исполняемым файлам, папке игры и JVM" Style="{StaticResource CardSubTitle}" Margin="0,0,0,14"/>
+
+                            <!-- Путь к Java с кнопкой Обзор -->
+                            <TextBlock Text="Путь к исполняемому файлу Java (javaw.exe)" Style="{StaticResource FieldLabel}"/>
+                            <Grid Margin="0,0,0,12">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="8"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <TextBox x:Name="JavaPathBox" Grid.Column="0" Style="{StaticResource ModernInputBox}"
+                                         ToolTip="Оставьте пустым, чтобы лаунчер автоматически нашёл нужную версию Java"/>
+                                <Button x:Name="BrowseJavaButton" Grid.Column="2" Content="Обзор..." Width="82"
+                                        Style="{StaticResource SecondaryButton}" Click="BrowseJavaButton_Click"/>
+                            </Grid>
+
+                            <!-- Папка игры с кнопками Выбрать и Открыть -->
+                            <TextBlock Text="Рабочая папка игры (.minecraft)" Style="{StaticResource FieldLabel}"/>
+                            <Grid Margin="0,0,0,14">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="8"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="8"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <TextBox x:Name="GameDirBox" Grid.Column="0" IsReadOnly="True" Style="{StaticResource ModernInputBox}"/>
+                                <Button x:Name="BrowseGameDirButton" Grid.Column="2" Content="Выбрать" Width="74"
+                                        Style="{StaticResource SecondaryButton}" Click="BrowseGameDirButton_Click"/>
+                                <Button x:Name="OpenGameDirButton" Grid.Column="4" Content="📁 Открыть" Width="82"
+                                        Style="{StaticResource SecondaryButton}" Click="OpenGameDirButton_Click"/>
+                            </Grid>
+
+                            <!-- Разрешение окна в игре -->
+                            <TextBlock Text="Разрешение игрового окна" Style="{StaticResource FieldLabel}"/>
+                            <ComboBox x:Name="ResolutionCombo" Margin="0,0,0,14" Height="34">
+                                <ComboBoxItem Content="854 × 480 (Стандартное)" Tag="854x480"/>
+                                <ComboBoxItem Content="1280 × 720 (HD 720p)" Tag="1280x720"/>
+                                <ComboBoxItem Content="1600 × 900 (HD+)" Tag="1600x900"/>
+                                <ComboBoxItem Content="1920 × 1080 (Full HD 1080p)" Tag="1920x1080"/>
+                                <ComboBoxItem Content="2560 × 1440 (2K QHD)" Tag="2560x1440"/>
+                            </ComboBox>
+
+                            <!-- Дополнительные параметры запуска JVM -->
+                            <TextBlock Text="Дополнительные аргументы JVM" Style="{StaticResource FieldLabel}"/>
+                            <TextBox x:Name="CustomJvmArgsBox" Style="{StaticResource ModernInputBox}"
+                                     ToolTip="Например: -XX:+UseG1GC -XX:+ParallelRefProcEnabled. Добавляются в конец при запуске."/>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- КАРТОЧКА 3: DISCORD RICH PRESENCE -->
+                    <Border Style="{StaticResource SettingsCard}">
+                        <StackPanel>
+                            <TextBlock Text="💬  DISCORD ИНТЕГРАЦИЯ" Style="{StaticResource CardHeaderTitle}" Margin="0,0,0,4"/>
+                            <TextBlock Text="Отображение игрового статуса в профиле Discord" Style="{StaticResource CardSubTitle}" Margin="0,0,0,12"/>
+
+                            <CheckBox x:Name="DiscordRpcCheck" Content="Показывать статус игры в Discord (Rich Presence)"
+                                      Style="{StaticResource ModernToggleSwitch}" Margin="0,0,0,12"/>
+
+                            <TextBlock Text="Discord Application ID (необязательно)" Style="{StaticResource FieldLabel}"/>
+                            <TextBox x:Name="DiscordAppIdBox" Style="{StaticResource ModernInputBox}"
+                                     ToolTip="Оставьте пустым для стандартного Goida статуса, либо введите свой ID из discord.com/developers"/>
+                        </StackPanel>
+                    </Border>
+                </StackPanel>
+
+                <!-- ПРАВАЯ КОЛОНКА: ТЕМЫ, ЦВЕТА, ЭФФЕКТЫ, ОФОРМЛЕНИЕ -->
+                <StackPanel Grid.Column="2">
+
+                    <!-- КАРТОЧКА 4: ПРЕСЕТЫ ТЕМ ОФОРМЛЕНИЯ -->
+                    <Border Style="{StaticResource SettingsCard}">
+                        <StackPanel>
+                            <TextBlock Text="🎨  СТИЛЬ ОФОРМЛЕНИЯ" Style="{StaticResource CardHeaderTitle}" Margin="0,0,0,4"/>
+                            <TextBlock Text="Готовые цветовые схемы и неоновые акценты" Style="{StaticResource CardSubTitle}" Margin="0,0,0,12"/>
+
+                            <WrapPanel x:Name="ThemesPanel" Margin="0,0,0,4"/>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- КАРТОЧКА 5: АКЦЕНТНЫЙ ЦВЕТ -->
+                    <Border Style="{StaticResource SettingsCard}">
+                        <StackPanel>
+                            <TextBlock Text="💎  АКЦЕНТНЫЙ ЦВЕТ" Style="{StaticResource CardHeaderTitle}" Margin="0,0,0,4"/>
+                            <TextBlock Text="Индивидуальный оттенок кнопок, свечений и ползунков" Style="{StaticResource CardSubTitle}" Margin="0,0,0,12"/>
+
+                            <WrapPanel x:Name="ColorSwatchPanel" Margin="0,0,0,4"/>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- КАРТОЧКА 6: ЭФФЕКТЫ И ВИЗУАЛИЗАЦИЯ -->
+                    <Border Style="{StaticResource SettingsCard}">
+                        <StackPanel>
+                            <TextBlock Text="✨  ЭФФЕКТЫ И АНИМАЦИИ" Style="{StaticResource CardHeaderTitle}" Margin="0,0,0,4"/>
+                            <TextBlock Text="Плавность интерфейса и визуальные эффекты" Style="{StaticResource CardSubTitle}" Margin="0,0,0,12"/>
+
+                            <CheckBox x:Name="AnimatedBgCheck" Content="Живой неоновый фон (плавающие лава-сферы)"
+                                      Style="{StaticResource ModernToggleSwitch}" Click="DesignOption_Changed"/>
+
+                            <Border Height="1" Background="#1D273B" Margin="0,6,0,6"/>
+
+                            <CheckBox x:Name="GlassmorphismCheck" Content="Эффект матового стекла (Glassmorphism &amp; акрил)"
+                                      Style="{StaticResource ModernToggleSwitch}" Click="DesignOption_Changed"/>
+
+                            <Border Height="1" Background="#1D273B" Margin="0,6,0,6"/>
+
+                            <CheckBox x:Name="GlowEffectCheck" Content="Неоновое свечение кнопки «Играть» (Glow Effect)"
+                                      Style="{StaticResource ModernToggleSwitch}" Click="DesignOption_Changed"/>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- КАРТОЧКА 7: ФОРМА И ЛОГОТИП -->
+                    <Border Style="{StaticResource SettingsCard}">
+                        <StackPanel>
+                            <TextBlock Text="📐  ФОРМА И БРЕНДИНГ" Style="{StaticResource CardHeaderTitle}" Margin="0,0,0,4"/>
+                            <TextBlock Text="Скругление углов и стиль логотипа в шапке" Style="{StaticResource CardSubTitle}" Margin="0,0,0,12"/>
+
+                            <TextBlock Text="Скругление углов интерфейса:" Style="{StaticResource FieldLabel}"/>
+                            <StackPanel Orientation="Horizontal" Margin="0,0,0,14">
+                                <RadioButton x:Name="RadiusModernRadio" Content="Современное (14px)" Margin="0,0,14,0"
+                                             Checked="RadiusRadio_Checked"/>
+                                <RadioButton x:Name="RadiusClassicRadio" Content="Классика (8px)" Margin="0,0,14,0"
+                                             Checked="RadiusRadio_Checked"/>
+                                <RadioButton x:Name="RadiusSharpRadio" Content="Строгое (4px)"
+                                             Checked="RadiusRadio_Checked"/>
+                            </StackPanel>
+
+                            <TextBlock Text="Стиль логотипа в шапке:" Style="{StaticResource FieldLabel}"/>
+                            <StackPanel Orientation="Horizontal" Margin="0,0,0,16">
+                                <RadioButton x:Name="LogoGoidaRadio" Content="GOIDA LAUNCHER" IsChecked="True"
+                                             Margin="0,0,18,0" Checked="LogoRadio_Checked"/>
+                                <RadioButton x:Name="LogoClassicRadio" Content="GOIDA CLASSIC"
+                                             Checked="LogoRadio_Checked"/>
+                            </StackPanel>
+
+                            <Button x:Name="ResetThemeButton" Content="↺  Сбросить стиль по умолчанию"
+                                    Height="32" Style="{StaticResource SecondaryButton}" HorizontalAlignment="Left"
+                                    Padding="14,4" Click="ResetThemeButton_Click"/>
+                        </StackPanel>
+                    </Border>
+                </StackPanel>
+            </Grid>
         </ScrollViewer>
     </Grid>
 </UserControl>

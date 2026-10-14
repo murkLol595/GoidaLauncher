@@ -18,12 +18,14 @@ public sealed class ModrinthService
         _http.DefaultRequestHeaders.UserAgent.ParseAdd("GoidaLauncher/1.0 (github.com goidalauncher)");
     }
 
-    /// <param name="projectType">"mod", "resourcepack" или "shader".</param>
-    public async Task<List<ModrinthHit>> SearchAsync(
+    /// <param name="projectType">"mod", "resourcepack", "shader", "datapack", "modpack", "plugin".</param>
+    public async Task<ModrinthSearchResponse> SearchAsync(
         string query,
         string projectType,
         string? gameVersion,
         string? loader,
+        int offset = 0,
+        int limit = 20,
         CancellationToken ct = default)
     {
         var facets = new List<string> { $"[\"project_type:{projectType}\"]" };
@@ -32,18 +34,18 @@ public sealed class ModrinthService
             facets.Add($"[\"versions:{gameVersion}\"]");
 
         if (!string.IsNullOrWhiteSpace(loader) && projectType == "mod")
-            facets.Add($"[\"categories:{loader}\"]");
+            facets.Add($"[\"categories:{loader.ToLowerInvariant()}\"]");
 
         var facetsParam = "[" + string.Join(",", facets) + "]";
 
         var url = $"{BaseUrl}/search" +
                    $"?query={Uri.EscapeDataString(query)}" +
                    $"&facets={Uri.EscapeDataString(facetsParam)}" +
-                   "&limit=30";
+                   $"&offset={offset}" +
+                   $"&limit={limit}";
 
         var json = await _http.GetStringAsync(url, ct);
-        var result = JsonSerializer.Deserialize<ModrinthSearchResponse>(json) ?? new ModrinthSearchResponse();
-        return result.Hits;
+        return JsonSerializer.Deserialize<ModrinthSearchResponse>(json) ?? new ModrinthSearchResponse();
     }
 
     /// <summary>
@@ -62,7 +64,7 @@ public sealed class ModrinthService
             query.Add($"game_versions={Uri.EscapeDataString($"[\"{gameVersion}\"]")}");
 
         if (!string.IsNullOrWhiteSpace(loader))
-            query.Add($"loaders={Uri.EscapeDataString($"[\"{loader}\"]")}");
+            query.Add($"loaders={Uri.EscapeDataString($"[\"{loader.ToLowerInvariant()}\"]")}");
 
         if (query.Count > 0)
             url += "?" + string.Join("&", query);
@@ -71,6 +73,20 @@ public sealed class ModrinthService
         var versions = JsonSerializer.Deserialize<List<ModrinthVersion>>(json) ?? new();
 
         var version = versions.FirstOrDefault();
+        if (version is null && query.Count > 0)
+        {
+            try
+            {
+                var fallbackJson = await _http.GetStringAsync($"{BaseUrl}/project/{projectId}/version", ct);
+                var fallbackVersions = JsonSerializer.Deserialize<List<ModrinthVersion>>(fallbackJson) ?? new();
+                version = fallbackVersions.FirstOrDefault();
+            }
+            catch
+            {
+                // Fallback ignore
+            }
+        }
+
         if (version is null) return null;
 
         return version.Files.FirstOrDefault(f => f.Primary) ?? version.Files.FirstOrDefault();
@@ -85,6 +101,19 @@ public sealed class ModrinthService
         response.EnsureSuccessStatusCode();
 
         await using var fs = File.Create(destPath);
+        await response.Content.CopyToAsync(fs, ct);
+    }
+
+    public async Task DownloadFileToPathAsync(string url, string destinationPath, CancellationToken ct = default)
+    {
+        var dir = Path.GetDirectoryName(destinationPath);
+        if (!string.IsNullOrWhiteSpace(dir))
+            Directory.CreateDirectory(dir);
+
+        using var response = await _http.GetAsync(url, HttpCompletionOption.ResponseHeadersRead, ct);
+        response.EnsureSuccessStatusCode();
+
+        await using var fs = File.Create(destinationPath);
         await response.Content.CopyToAsync(fs, ct);
     }
 }

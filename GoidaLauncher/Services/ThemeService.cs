@@ -165,13 +165,23 @@ public static class ThemeService
         var res = Application.Current.Resources;
 
         // 1. Акцентные цвета
-        res["AccentGreen"] = new SolidColorBrush(primary);
-        res["AccentGreenDark"] = new SolidColorBrush(darkColor);
+        var accentGreen = new SolidColorBrush(primary);
+        accentGreen.Freeze();
+        res["AccentGreen"] = accentGreen;
+
+        var accentGreenDark = new SolidColorBrush(darkColor);
+        accentGreenDark.Freeze();
+        res["AccentGreenDark"] = accentGreenDark;
+
         res["AccentColorRaw"] = primary;
-        res["AccentSecondary"] = new SolidColorBrush(secondary);
+
+        var accentSecondary = new SolidColorBrush(secondary);
+        accentSecondary.Freeze();
+        res["AccentSecondary"] = accentSecondary;
 
         // 2. Фон приложения
         var bgGradient = new LinearGradientBrush(preset.BgDarkStart, preset.BgDarkEnd, new Point(0, 0), new Point(1, 1));
+        bgGradient.Freeze();
         res["BgDark"] = bgGradient;
 
         // 3. Панели (Glassmorphism / акрил или Solid)
@@ -186,8 +196,12 @@ public static class ThemeService
                 new(Darken(panelColor, 0.12), 1)
             }
         };
+        panelGradient.Freeze();
         res["BgPanel"] = panelGradient;
-        res["PanelBorderBrush"] = new SolidColorBrush(preset.BorderColor);
+
+        var panelBorder = new SolidColorBrush(preset.BorderColor);
+        panelBorder.Freeze();
+        res["PanelBorderBrush"] = panelBorder;
 
         // 4. Неоновое свечение кнопки
         var glow = new DropShadowEffect
@@ -198,10 +212,12 @@ public static class ThemeService
             BlurRadius = settings.GlowEffectEnabled ? 26 : 0,
             Opacity = settings.GlowEffectEnabled ? 0.65 : 0
         };
+        glow.Freeze();
         res["GlowShadow"] = glow;
 
         // 5. Градиент кнопки "ИГРАТЬ"
         var playBtnBrush = new LinearGradientBrush(primary, secondary, new Point(0, 0), new Point(1, 1));
+        playBtnBrush.Freeze();
         res["PlayButtonBrush"] = playBtnBrush;
 
         // 6. Скругление углов

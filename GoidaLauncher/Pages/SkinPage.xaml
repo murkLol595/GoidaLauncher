@@ -3,42 +3,67 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:local="clr-namespace:GoidaLauncher.Pages"
              FontFamily="Segoe UI">
-    <Grid Margin="32">
+
+    <Grid Margin="28,16,28,20">
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="260"/>
-            <ColumnDefinition Width="24"/>
+            <!-- Левая колонка: ТЕКУЩИЙ СКИН -->
+            <ColumnDefinition Width="340"/>
+            <!-- Разделитель -->
+            <ColumnDefinition Width="32"/>
+            <!-- Правая колонка: БИБЛИОТЕКА -->
             <ColumnDefinition Width="*"/>
         </Grid.ColumnDefinitions>
 
-        <!-- 3D-превью текущего активного скина -->
-        <Border Grid.Column="0" CornerRadius="10" Effect="{StaticResource CardShadow}" ClipToBounds="True">
-            <local:SkinViewer3D x:Name="Viewer3D"/>
-        </Border>
-
-        <!-- Библиотека скинов -->
-        <Grid Grid.Column="2">
+        <!-- ЛЕВАЯ КОЛОНКА: ТЕКУЩИЙ СКИН -->
+        <Grid Grid.Column="0">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+
+            <!-- Заголовок Текущий -->
+            <TextBlock Grid.Row="0" Text="Текущий" FontSize="20" FontWeight="Bold"
+                       Foreground="{StaticResource TextPrimary}" HorizontalAlignment="Center"
+                       Margin="0,0,0,14"/>
+
+            <!-- 3D вьюпорт персонажа -->
+            <Border Grid.Row="1" CornerRadius="14" Style="{StaticResource GoidaCard}" Padding="12"
+                    ClipToBounds="True">
+                <local:SkinViewer3D x:Name="Viewer3D"/>
+            </Border>
+
+            <!-- Кнопки под 3D-моделью -->
+            <StackPanel Grid.Row="2" Margin="0,16,0,0">
+                <Button x:Name="UploadSkinButton" Content="+ Добавить в библиотеку" Height="38"
+                        Style="{StaticResource LaunchButton}" FontSize="13" FontWeight="Bold"
+                        Click="UploadSkinButton_Click" Margin="0,0,0,8"/>
+                <Button x:Name="OpenSkinsFolderButton" Content="📁  Папка скинов" Height="32"
+                        Style="{StaticResource SecondaryButton}" FontSize="12"
+                        Click="OpenSkinsFolderButton_Click"/>
+            </StackPanel>
+        </Grid>
+
+        <!-- ВЕРТИКАЛЬНЫЙ РАЗДЕЛИТЕЛЬ -->
+        <Rectangle Grid.Column="1" Width="1" Fill="#222B3F" HorizontalAlignment="Center"
+                   Margin="0,10,0,10"/>
+
+        <!-- ПРАВАЯ КОЛОНКА: БИБЛИОТЕКА СКИНОВ -->
+        <Grid Grid.Column="2">
+            <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="*"/>
             </Grid.RowDefinitions>
 
-            <Grid Grid.Row="0" Margin="0,0,0,4">
-                <TextBlock Text="Скины" FontSize="24" FontWeight="Bold" Foreground="{StaticResource TextPrimary}"/>
-                <Button x:Name="UploadSkinButton" Content="+ Загрузить скин" Width="160" Height="34"
-                        HorizontalAlignment="Right" Style="{StaticResource LaunchButton}" FontSize="13"
-                        Click="UploadSkinButton_Click"/>
+            <!-- Заголовок Библиотека -->
+            <Grid Grid.Row="0" Margin="0,0,0,14">
+                <TextBlock Text="Библиотека" FontSize="20" FontWeight="Bold"
+                           Foreground="{StaticResource TextPrimary}" HorizontalAlignment="Center"/>
             </Grid>
 
-            <TextBlock Grid.Row="1" TextWrapping="Wrap" Foreground="{StaticResource TextSecondary}"
-                       FontSize="12" Margin="0,0,0,16" HorizontalAlignment="Left">
-                Скины хранятся тут в общей библиотеке и одинаково доступны во всех установленных
-                сборках. Применяет их мод <Run FontStyle="Italic">CustomSkinLoader</Run> — поставьте его
-                в загрузчик (Fabric/Forge/Quilt), лаунчер сам положит выбранный скин туда, где мод его ищет.
-            </TextBlock>
-
-            <ScrollViewer Grid.Row="2" VerticalScrollBarVisibility="Auto">
-                <WrapPanel x:Name="SkinsPanel" Orientation="Horizontal"/>
+            <!-- Сетка библиотеки со скроллом -->
+            <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+                <WrapPanel x:Name="SkinsPanel" Orientation="Horizontal" HorizontalAlignment="Center"/>
             </ScrollViewer>
         </Grid>
     </Grid>

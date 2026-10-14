@@ -6,7 +6,7 @@ Welcome to the **Goida Launcher** project! This file serves as the official spec
 
 ## 📌 Project Overview
 - **Name:** Goida Launcher
-- **Version:** 6.7
+- **Version:** 7.5
 - **Type:** Offline Minecraft Launcher with Mod Loader & 3D Skin support
 - **Framework:** .NET 10.0 WPF (C#)
 - **Co-developer:** Created and maintained in collaboration with **Google Antigravity / Gemini AI**.
@@ -32,7 +32,7 @@ dotnet publish GoidaLauncher/GoidaLauncher.csproj -c Release -r win-x64 --self-c
 ### 3. Build Setup Installer
 ```bash
 & "C:\Users\admin\AppData\Local\Programs\Inno Setup 6\ISCC.exe" installer.iss
-# Generates: InstallerOutput\GoidaLauncher-Setup-v6.7.exe
+# Generates: InstallerOutput\GoidaLauncher-Setup-v7.5.exe
 ```
 
 ---

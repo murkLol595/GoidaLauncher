@@ -30,6 +30,14 @@ public partial class SkinViewer3D : UserControl
         MouseMove += OnMouseMove;
         MouseLeave += (_, _) => EndDrag();
 
+        IsVisibleChanged += (_, e) =>
+        {
+            if ((bool)e.NewValue)
+                Resume();
+            else
+                Pause();
+        };
+
         StartAutoRotate(0);
     }
 
@@ -107,13 +115,32 @@ public partial class SkinViewer3D : UserControl
     // Вращение: авто-поворот, либо мышью (тянешь — крутится, отпустил — авто-поворот продолжается)
     // ---------------------------------------------------------------
 
+    /// <summary>
+    /// Приостанавливает 3D-вращение для экономии ресурсов GPU/CPU.
+    /// </summary>
+    public void Pause()
+    {
+        _rotation.BeginAnimation(AxisAngleRotation3D.AngleProperty, null);
+    }
+
+    /// <summary>
+    /// Возобновляет вращение при возврате на вкладку или закрытии игры.
+    /// </summary>
+    public void Resume()
+    {
+        if (IsVisible && !_dragging)
+        {
+            StartAutoRotate(_rotation.Angle);
+        }
+    }
+
     private void StartAutoRotate(double fromAngle)
     {
         var anim = new DoubleAnimation(fromAngle, fromAngle + 360, TimeSpan.FromSeconds(14))
         {
             RepeatBehavior = RepeatBehavior.Forever,
         };
-        Timeline.SetDesiredFrameRate(anim, 60);
+        Timeline.SetDesiredFrameRate(anim, 45); // 45 FPS для 3D превью абсолютно плавно и экономит GPU
         _rotation.BeginAnimation(AxisAngleRotation3D.AngleProperty, anim);
     }
 
